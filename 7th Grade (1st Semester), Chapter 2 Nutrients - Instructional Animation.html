@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>養分 教學動畫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 版面：左邊是動畫舞台與播放控制，右邊是可遮字背誦的重點筆記；窄螢幕時上下堆疊 */
+  --paper:#f2f2f0; --card:#ffffff; --ink:#1b2230; --muted:#5a6475; --line:#d5d9e2;
+  --accent:#2f7a3a; --accent-soft:#dff0dc; --memo:#fff4cc;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;padding:18px 20px 12px;max-width:1280px;margin:0 auto}
+.eyebrow{font-size:13px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-size:26px;margin:0;line-height:1.25}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,.k:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+nav button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px;padding:0 20px 28px;max-width:1280px;margin:0 auto;align-items:start}
+.stage,.notes{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stagehead{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-bottom:8px}
+#num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.06em}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+svg#svg{display:block;width:100%;height:auto;background:#fafbfc;border:1px solid var(--line);border-radius:12px}
+svg text{font-family:var(--body)}
+.cap{min-height:3.2em;margin:10px 2px 8px;font-size:17px;font-weight:500}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;min-width:116px;padding:10px 16px}
+.primary:hover{filter:brightness(1.08)}
+#seek{flex:1 1 160px;accent-color:var(--accent);min-width:120px}
+.nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0;justify-content:center;flex:1 1 200px}
+#steps button{width:30px;height:30px;padding:0;border-radius:50%;font-size:13px;font-variant-numeric:tabular-nums}
+#steps button.seen{background:var(--accent-soft);border-color:var(--accent)}
+#steps button[aria-current="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+#steps li.gap{width:8px}
+#next.ready{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.noteshead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+h3{font-family:var(--display);font-size:19px;margin:0}
+#recite[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+#points{margin:12px 0;padding-left:1.2em;display:flex;flex-direction:column;gap:9px}
+.k{font-weight:700;color:var(--accent);border-radius:4px;padding:0 2px}
+.reciting .k{color:transparent;background:var(--accent-soft);border-bottom:2px solid var(--accent);cursor:pointer;user-select:none}
+.reciting .k.open{color:var(--accent);background:none;border-bottom-color:transparent}
+.rhyme{background:var(--memo);border-radius:12px;padding:10px 14px}
+.rhyme span{font-size:12px;font-weight:700;letter-spacing:.1em;color:#7a5a00}
+.rhyme p{margin:2px 0 0;font-family:var(--display);font-size:19px;line-height:1.5}
+.hint{font-size:14px;color:var(--muted);margin:12px 2px 0}
+@media (max-width:860px){main{grid-template-columns:1fr}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="eyebrow">國中自然 1 上・第 2 章</div><h1>養分</h1></div>
+  <nav id="units" aria-label="單元"></nav>
+</header>
+<main>
+  <section class="stage" aria-label="動畫">
+    <div class="stagehead"><span id="num"></span><h2 id="title"></h2></div>
+    <svg id="svg" viewBox="0 0 800 450" role="img" aria-labelledby="title">
+      <defs>
+        <marker id="ahR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d43d3d"/></marker>
+        <marker id="ahB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4a63c9"/></marker>
+        <marker id="ahK" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#56665e"/></marker>
+        <linearGradient id="gcap" gradientUnits="userSpaceOnUse" x1="270" x2="530" y1="0" y2="0"><stop offset="0" stop-color="#e86a5e"/><stop offset="1" stop-color="#7f8fe0"/></linearGradient>
+        <linearGradient id="gcap2" gradientUnits="userSpaceOnUse" x1="40" x2="520" y1="0" y2="0"><stop offset="0" stop-color="#f08a80"/><stop offset="1" stop-color="#a9b4ea"/></linearGradient>
+      </defs>
+      <g id="stat"></g><g id="dyn"></g>
+    </svg>
+    <p class="cap" id="cap" aria-live="polite"></p>
+    <div class="controls">
+      <button id="play" class="primary" type="button">▶ 開始</button>
+      <button id="replay" type="button">↺ 從頭播放</button>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="動畫進度">
+    </div>
+    <div class="nav">
+      <button id="prev" type="button">← 上一階段</button>
+      <ol id="steps" aria-label="階段"></ol>
+      <button id="next" type="button">下一階段 →</button>
+    </div>
+  </section>
+  <aside class="notes" id="notes" aria-label="重點歸納">
+    <div class="noteshead"><h3>重點歸納</h3><button id="recite" type="button" aria-pressed="false">背誦模式：遮住關鍵字</button></div>
+    <ul id="points"></ul>
+    <div class="rhyme"><span>背誦口訣</span><p id="rhyme"></p></div>
+    <p class="hint" id="hint"></p>
+  </aside>
+</main>
+
+<script id="stages">
+/* ---------- 繪圖小工具（只回傳 SVG 字串，不碰 DOM） ---------- */
+const C={ink:'#1b2230',mut:'#56665e',P:'#d43d3d',N:'#2f6fd6',K:'#e08a1e',U:'#2f9e6b',E:'#7a4fc7',line:'#c9ced8',bg:'#fafbfc',cont:'#c9a66b',ocean:'#5b6b7d',mantle:'#e08a4a',asth:'#f0a868',core:'#f2c94c',sea:'#8cc4ee',magma:'#e2452f',lith:'#9a9b78'};
+const LY=['#ead9a8','#c9b07a','#a98b5e','#8c6f4a'];
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const sg=(t,a,b)=>cl((t-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const n1=n=>(Math.round(n*10)/10);
+const PI=Math.PI,RAD=PI/180;
+const dot=(x,y,r,fill,o=1,ex='')=>`<circle cx="${n1(x)}" cy="${n1(y)}" r="${n1(Math.max(0,r))}" fill="${fill}" opacity="${n1(cl(o)*100)/100}" ${ex}/>`;
+const T=(x,y,s,o={})=>`<text x="${n1(x)}" y="${n1(y)}" text-anchor="${o.a||'middle'}" font-size="${o.z||17}" font-weight="${o.w||500}" fill="${o.f||C.ink}" opacity="${n1(cl(o.o??1)*100)/100}">${s}</text>`;
+const AR=(x1,y1,x2,y2,c='R',w=4,o=1)=>`<line x1="${n1(x1)}" y1="${n1(y1)}" x2="${n1(x2)}" y2="${n1(y2)}" stroke="${{R:C.P,B:'#4a63c9',K:C.mut}[c]}" stroke-width="${w}" marker-end="url(#ah${c})" opacity="${o}"/>`;
+const RC=(x,y,w,h,fill,ex='')=>`<rect x="${n1(x)}" y="${n1(y)}" width="${n1(Math.max(0,w))}" height="${n1(Math.max(0,h))}" fill="${fill}" ${ex}/>`;
+const along=(pts,s)=>{for(let i=1;i<pts.length;i++){const[ax,ay]=pts[i-1],[bx,by]=pts[i],d=Math.hypot(bx-ax,by-ay);if(s<=d||i===pts.length-1){const p=d?cl(s/d):0;return[ax+(bx-ax)*p,ay+(by-ay)*p];}s-=d;}};
+const plen=pts=>pts.slice(1).reduce((a,p,i)=>a+Math.hypot(p[0]-pts[i][0],p[1]-pts[i][1]),0);
+const PL=(x,y,z=18,o=1)=>T(x,y+z*.35,'＋',{w:700,z,f:C.P,o}),MI=(x,y,z=18,o=1)=>T(x,y+z*.35,'－',{w:700,z,f:C.N,o});
+const W=(d)=>`<path d="${d}" fill="none" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>`;
+const bulb=(x,y,br)=>dot(x,y,24+10*br,'#f6c545',.45*br)+dot(x,y,15,'#fff',1,`stroke="${C.ink}" stroke-width="2.5"`)+dot(x,y,14,'#f6c545',br)+`<path d="M${x-8} ${y-8}L${x+8} ${y+8}M${x+8} ${y-8}L${x-8} ${y+8}" stroke="${C.ink}" stroke-width="1.5"/>`;
+const batH=(x,y)=>RC(x-6,y-4,12,8,C.bg)+`<line x1="${x-6}" y1="${y-15}" x2="${x-6}" y2="${y+15}" stroke="${C.ink}" stroke-width="2.5"/><line x1="${x+6}" y1="${y-8}" x2="${x+6}" y2="${y+8}" stroke="${C.ink}" stroke-width="6"/>`+T(x-17,y-12,'＋',{z:12,f:C.P,w:700})+T(x+18,y-12,'－',{z:12,f:C.N,w:700});
+const batV=(x,y)=>RC(x-4,y-6,8,12,C.bg)+`<line x1="${x-15}" y1="${y-6}" x2="${x+15}" y2="${y-6}" stroke="${C.ink}" stroke-width="2.5"/><line x1="${x-8}" y1="${y+6}" x2="${x+8}" y2="${y+6}" stroke="${C.ink}" stroke-width="6"/>`+T(x-24,y-8,'＋',{z:12,f:C.P,w:700})+T(x-24,y+16,'－',{z:12,f:C.N,w:700});
+const flow=(pts,n,ph,col,r=5)=>{const L=plen(pts);let h='';for(let i=0;i<n;i++){const[x,y]=along(pts,(((ph+i/n)%1)+1)%1*L);h+=dot(x,y,r,col);}return h;};
+const chips=(labs,act)=>labs.map((n,k)=>{const w=760/labs.length,x=20+w*k,a=act===k;return RC(x+4,372,w-8,34,a?C.E:'#fff',`rx="17" stroke="${a?C.E:'#d5d9e2'}" stroke-width="2"`)+T(x+w/2,395,n,{w:700,z:15,f:a?'#fff':k<act?C.ink:C.mut});}).join('');
+const panels=`${[15,280,545].map(x=>`<rect x="${x}" y="50" width="240" height="270" rx="16" fill="#fff" stroke="#d5d9e2"/>`).join('')}`;
+
+
+const UNITS=['食物中的養分','酵素','植物的養分','動物的養分','給你的話'];
+const S=[];
+const poly=(pts,fill,ex='')=>`<path d="M${pts.map(p=>n1(p[0])+' '+n1(p[1])).join('L')}Z" fill="${fill}" ${ex}/>`;
+const SK='#f6e3d0',BLU='#2f6fd6',RED='#d43d3d',GRN='#2f9e6b',ORG='#e08a1e',PUR='#7a4fc7';
+const LN=(pts,c,w,ex='')=>`<path d="M${pts.map(p=>n1(p[0])+' '+n1(p[1])).join('L')}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" ${ex}/>`;
+const sm=x=>x*x*(3-2*x);
+const card=(x,y,w,h,ti,lines,c,o=1,act=true)=>`<g opacity="${n1(o*100)/100}">`+RC(x,y,w,h,'#fff',`rx="12" stroke="${act?c:'#d5d9e2'}" stroke-width="${act?2.5:1.5}"`)+T(x+w/2,y+26,ti,{w:700,z:16,f:c})+lines.map((s,i)=>T(x+w/2,y+50+22*i,s,{z:13})).join('')+'</g>';
+const G=(o,inner)=>`<g opacity="${n1(cl(o)*100)/100}">${inner}</g>`;
+const hx=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));
+const mix=(a,b,p)=>{const A=hx(a),B=hx(b);p=cl(p);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*p).toString(16).padStart(2,'0')).join('');};
+const seqc=(arr,p)=>{const x=cl(p)*(arr.length-1),i=Math.min(arr.length-2,Math.floor(x));return mix(arr[i],arr[i+1],x-i);};
+const BEN=['#8fd0f0','#7cc47a','#e8d44a','#f09a3a','#d9482b'];
+const tube=(x,top,bot,w,lv,col)=>{const r=w/2,l=Math.min(lv,bot-r);return `<path d="M${x-r} ${n1(l)}V${bot-r}A${r} ${r} 0 0 0 ${x+r} ${bot-r}V${n1(l)}Z" fill="${col}"/><path d="M${x-r} ${top}V${bot-r}A${r} ${r} 0 0 0 ${x+r} ${bot-r}V${top}" fill="none" stroke="${C.ink}" stroke-width="2.5"/>`;};
+const beaker=(x1,y1,x2,y2,lv,col)=>RC(x1,lv,x2-x1,y2-lv,col,'opacity=".75"')+`<path d="M${x1} ${y1}V${y2}H${x2}V${y1}" fill="none" stroke="${C.ink}" stroke-width="2.5"/>`;
+const flame=(x,y,k)=>`<path d="M${x} ${n1(y-18-4*k)}Q${x+14} ${y} ${x} ${y+8}Q${x-14} ${y} ${x} ${n1(y-18-4*k)}Z" fill="#f08a2a"/><path d="M${x} ${n1(y-8-2*k)}Q${x+6} ${y+2} ${x} ${y+6}Q${x-6} ${y+2} ${x} ${n1(y-8-2*k)}Z" fill="#f6d04a"/>`;
+const ALL=(t,d)=>t<.01||t>=d-.1;
+
+/* ---------- 1 六大養分與能量 ---------- */
+const E3=[['醣類',4,ORG],['蛋白質',4,RED],['脂質',9,PUR]],N3=['水','礦物質','維生素'];
+S.push({unit:0,title:'六大養分與能量',dur:15,loop:false,svg:
+`${RC(20,48,490,218,'#fff','rx="14" stroke="#d5d9e2"')}${T(265,78,'可產生能量',{w:700,z:17,f:RED})}${RC(530,48,250,218,'#fff','rx="14" stroke="#d5d9e2"')}${T(655,78,'不能產生能量',{w:700,z:17,f:BLU})}
+${T(400,396,'六大養分：醣類、蛋白質、脂質可產生能量；水、礦物質、維生素不能產生能量',{w:700,z:16})}${T(400,424,'1 大卡（千卡）＝ 1000 卡；1 卡的熱量可使 1 公克的水溫度升高 1℃',{z:14,f:C.mut})}`,
+caps:[[0,'人體時時刻刻都在消耗能量，所以要攝取食物。食物裡的養分可以分成六大類。'],[1,'醣類、蛋白質、脂質可以產生能量。1 公克的醣類或蛋白質產生 4 大卡，1 公克的脂質產生 9 大卡。'],[6,'水、礦物質、維生素不能產生能量，但身體一樣需要它們。'],[9,'算算看：把每一種養分的公克數乘上它每公克的大卡數，再加起來。礦物質不產生能量，是 0。']],
+tick(t){const A=ALL(t,15);let h='';
+ E3.forEach(([n,k,c],i)=>{const y=96+54*i,o=A?1:sg(t,1+1.5*i,1.4+1.5*i);let g=RC(36,y,104,40,'#fff',`rx="10" stroke="${c}" stroke-width="2"`)+T(88,y+27,n,{w:700,z:16,f:c});
+  for(let j=0;j<k;j++)g+=RC(156+25*j,y+9,21,22,c,`rx="4" opacity="${A?1:n1(sg(t,1.3+1.5*i+j*.11,1.5+1.5*i+j*.11))}"`);
+  g+=T(390,y+27,'1 公克 '+k+' 大卡',{a:'start',z:14,w:700,o:A?1:sg(t,2.2+1.5*i,2.5+1.5*i)});h+=G(o,g);});
+ N3.forEach((n,i)=>{const y=96+54*i;h+=G(A?1:sg(t,6+.7*i,6.5+.7*i),RC(546,y,218,40,'#fff',`rx="10" stroke="${BLU}" stroke-width="2"`)+T(562,y+27,n,{a:'start',w:700,z:16,f:BLU})+T(750,y+27,'0 大卡',{a:'end',z:13,f:C.mut}));});
+ h+=T(400,296,'例：一份食物含有 醣類 20 g、蛋白質 10 g、脂質 5 g、礦物質 1 g',{z:15,o:A?1:sg(t,9,9.6)});
+ [['醣類 20×4＝80',150,ORG],['蛋白質 10×4＝40',330,RED],['脂質 5×9＝45',500,PUR],['礦物質 0',650,BLU]].forEach(([s,x,c],i)=>h+=T(x,328,s,{z:15,w:700,f:c,o:A?1:sg(t,10+.8*i,10.4+.8*i)}));
+ h+=T(400,360,'總熱量 ＝ 80 ＋ 40 ＋ 45 ＋ 0 ＝ 165 大卡',{w:700,z:17,o:A?1:sg(t,13.4,14)});
+ return h;},
+points:['食物中的養分分為六大類：<b>醣類</b>（碳水化合物）、<b>蛋白質</b>、<b>脂質</b>、<b>水</b>、<b>礦物質</b>、<b>維生素</b>。','可產生能量：<b>醣類、蛋白質、脂質</b>；不能產生能量：<b>水、礦物質、維生素</b>。','1 公克的醣類或蛋白質可產生 <b>4</b> 大卡的熱量；1 公克的脂質可產生 <b>9</b> 大卡。','1 大卡（千卡）＝ <b>1000</b> 卡；1 卡是使 1 公克水溫度升高 <b>1</b>℃ 所需的熱量。','點燃洋芋片可以使水溫<b>上升</b>，表示食物中含有能量。'],
+rhyme:'醣四、蛋四、脂九；水、礦、維不產能。'});
+
+/* ---------- 2 養分的重要性 ---------- */
+const NUT=[['醣類',['纖維素：組成植物的細胞壁','澱粉、肝糖：儲存能量','　'],ORG],['蛋白質',['組成人類的肌肉','組成頭髮','　'],RED],['脂質',['細胞膜的主要成分','皮膚下層的脂質','可隔絕熱量散失（保溫）'],PUR],['水',['讓物質溶解成水溶液','有利物質的反應和運送','　'],BLU],['礦物質',['調節生理機能、組成構造','鐵：和造血功能有關','鈣：骨頭和牙齒的主要成分'],GRN],['維生素',['調節生理機能','缺維生素 A：夜盲症','缺維生素 C：壞血病'],'#b0457f']];
+S.push({unit:0,title:'每一種養分都重要',dur:14,loop:false,svg:
+`${T(400,388,'醣類、蛋白質、脂質：提供能量，也是組成生物體的原料',{w:700,z:16})}${T(400,416,'水、礦物質、維生素：不能產生能量，但能維持正常的生理運作，所以飲食要均衡',{z:15})}`,
+caps:[[0,'六種養分各有各的工作，少了哪一種都不行。'],[1,'醣類：植物細胞壁的纖維素，還有儲存能量用的澱粉和肝糖，都是醣類。'],[3,'蛋白質：肌肉和頭髮都是蛋白質構成的。'],[5,'脂質：細胞膜的主要成分；皮膚下層的脂質可以保溫。'],[7,'水：物質溶在水裡，才方便反應和運送。'],[9,'礦物質：鐵和造血有關，鈣是骨頭和牙齒的主要成分。'],[11,'維生素：調節生理機能。缺維生素 A 會得夜盲症，缺維生素 C 會得壞血病。']],
+tick(t){const A=ALL(t,14);let h='';NUT.forEach(([n,l,c],i)=>{const st=1+2*i,x=20+258*(i%3),y=i<3?50:205;h+=card(x,y,244,140,n,l,c,A?1:t>=st?1:.25,A||(t>=st&&t<st+2));});return h;},
+points:['<b>醣類</b>：纖維素組成植物的<b>細胞壁</b>；<b>澱粉</b>與<b>肝糖</b>用來儲存能量。','<b>蛋白質</b>：構成人類的<b>肌肉</b>和<b>頭髮</b>。','<b>脂質</b>：<b>細胞膜</b>的主要成分；皮膚下層的脂質可隔絕熱量散失，達到<b>保溫</b>效果。','<b>水</b>：讓物質<b>溶解</b>成水溶液，有利物質的反應和運送。','<b>礦物質</b>：<b>鐵</b>和造血功能有關；<b>鈣</b>是骨頭和牙齒的主要成分。','<b>維生素</b>：調節生理機能；缺維生素 A 會得<b>夜盲症</b>，缺維生素 C 會得<b>壞血病</b>。'],
+rhyme:'鐵造血、鈣造骨；缺 A 夜盲、缺 C 壞血。'});
+
+/* ---------- 3 醣類的測定 ---------- */
+S.push({unit:0,title:'用碘液和本氏液檢驗醣類',dur:16,loop:false,svg:
+`${T(175,68,'碘液：檢驗澱粉',{w:700,z:17,f:'#8a5a12'})}${T(565,68,'本氏液：檢驗葡萄糖（要隔水加熱）',{w:700,z:17,f:BLU})}<line x1="340" y1="50" x2="340" y2="365" stroke="#d5d9e2" stroke-width="2"/>
+${RC(50,150,250,40,'#eef3f8','rx="4" stroke="#9aa3b5" stroke-width="2"')}${T(115,134,'甲：澱粉液',{z:13})}${T(235,134,'乙：水（對照）',{z:13})}${T(175,292,'水是對照組，用來和澱粉液的結果比較',{z:12,f:C.mut})}
+${T(365,200,'甲：葡萄糖液',{a:'start',z:13})}${T(365,222,'乙：水（對照）',{a:'start',z:13})}${T(535,98,'甲',{w:700,z:15})}${T(605,98,'乙',{w:700,z:15})}
+${BEN.map((c,i)=>RC(440+52*i,338,52,14,c)).join('')}${T(432,350,'低',{a:'end',z:12})}${T(708,350,'高',{a:'start',z:12})}${T(570,368,'顏色越偏紅，葡萄糖的濃度越高',{z:12,f:C.mut})}
+${T(400,398,'碘液（黃褐色）遇到澱粉 → 藍黑色（或紫紅色）',{w:700,z:16})}${T(400,426,'本氏液（淡藍色）加葡萄糖並加熱 → 綠、黃、橙、紅',{w:700,z:16})}`,
+caps:[[0,'營養標示上的「碳水化合物」就是醣類。澱粉和葡萄糖都是醣類，可以用兩種試劑來檢驗。'],[1,'在澱粉液和水上各滴一滴黃褐色的碘液。'],[2.5,'澱粉液變成藍黑色，水沒有變。所以碘液變藍黑色，代表有澱粉。'],[6,'另一邊，在葡萄糖液和水裡各加入淡藍色的本氏液，搖勻。'],[8,'放進燒杯裡隔水加熱。'],[9.5,'葡萄糖液那一管顏色改變了：綠、黃、橙、紅。水那一管還是淡藍色。'],[13,'本氏液加熱後變色，代表有葡萄糖；顏色越偏紅，葡萄糖的濃度越高。']],
+tick(t){const A=ALL(t,16);if(A)t=16;let h='';
+ const q=sg(t,2.5,4.5);h+=`<ellipse cx="115" cy="170" rx="34" ry="13" fill="${mix('#f3f1ea','#1f2a55',q)}" stroke="#8a93a5"/><ellipse cx="235" cy="170" rx="34" ry="13" fill="${mix('#dbeefa','#e0b060',q)}" stroke="#8a93a5"/>`;
+ if(t>=1&&t<2.5)h+=dot(115,lerp(100,160,sg(t,1,2.5)),6,'#b5762a')+dot(235,lerp(100,160,sg(t,1,2.5)),6,'#b5762a');
+ const o1=sg(t,4.3,4.9);h+=T(115,216,'藍黑色',{w:700,z:15,f:'#1f2a55',o:o1})+T(115,238,'有澱粉',{z:13,o:o1})+T(235,216,'黃褐色',{w:700,z:15,f:'#8a5a12',o:o1})+T(235,238,'沒有澱粉',{z:13,o:o1});
+ const ad=sg(t,6,7.5),ht=sg(t,9.5,13),lv=lerp(235,200,ad);
+ h+=beaker(480,150,660,296,185,'#d9ecf8')+tube(535,105,285,30,lv,mix('#eef6fb',seqc(BEN,ht),ad))+tube(605,105,285,30,lv,mix('#eef6fb',BEN[0],ad));
+ if(t>=8&&t<15.9)h+=flame(570,322,Math.sin(t*9));
+ const o2=sg(t,13,13.6);h+=T(672,200,'甲：變色',{a:'start',w:700,z:14,f:RED,o:o2})+T(672,220,'有葡萄糖',{a:'start',z:13,o:o2})+T(672,254,'乙：不變色',{a:'start',w:700,z:14,f:BLU,o:o2});
+ return h;},
+points:['<b>碘液</b>是<b>黃褐</b>色試劑，用來檢測<b>澱粉</b>；遇到澱粉變成<b>藍黑</b>色（或紫紅色）。','<b>本氏液</b>是<b>淡藍</b>色試劑，用來檢測<b>葡萄糖</b>等醣類。','本氏液加入食物後要<b>隔水加熱</b>；有葡萄糖時顏色會變成綠、黃、橙、紅。','顏色越偏<b>紅</b>色，代表葡萄糖的濃度越<b>高</b>。','實驗中加<b>水</b>的那一組是<b>對照</b>組。'],
+rhyme:'碘液找澱粉，變藍黑；本氏液找葡萄糖，加熱變紅。'});
+
+/* ---------- 4 酵素的作用 ---------- */
+const enz=(x,y)=>RC(x-48,y-12,96,36,PUR,'rx="8"')+`<ellipse cx="${x}" cy="${y-12}" rx="31" ry="10" fill="${C.bg}"/>`+T(x,y+18,'酵素',{z:13,w:700,f:'#fff'});
+const mol=(x,y,c,o=1)=>dot(x,y,13,c,o,`stroke="${C.ink}" stroke-width="1.5"`);
+const rowA=(p,done)=>{let h=enz(270,150);const c=ORG;
+ if(p<.55){const q=sm(cl(p/.35)),x=lerp(90,270,q),y=lerp(112,126,q);h+=mol(x-13,y,c)+mol(x+13,y,c)+`<line x1="${n1(x-3)}" y1="${n1(y)}" x2="${n1(x+3)}" y2="${n1(y)}" stroke="${C.ink}" stroke-width="3"/>`;if(p>=.35)h+=dot(270,126,30,'none',1,`stroke="${ORG}" stroke-width="3" stroke-dasharray="4 5"`);}
+ else{const q=sm(sg(p,.55,.9)),o=1-sg(p,.92,1);h+=mol(lerp(257,420,q),lerp(126,100,q),c,o)+mol(lerp(283,470,q),lerp(126,128,q),c,o);}
+ if(done)h+=mol(420,100,c,.35)+mol(470,128,c,.35);return h;};
+const rowB=(p,done)=>{let h=enz(270,300);const c=GRN;
+ if(p<.55){const q=sm(cl(p/.35));h+=mol(lerp(80,257,q),lerp(262,276,q),c)+mol(lerp(120,283,q),lerp(302,276,q),c);if(p>=.35)h+=dot(270,276,30,'none',1,`stroke="${GRN}" stroke-width="3" stroke-dasharray="4 5"`);}
+ else{const q=sm(sg(p,.55,.9)),o=1-sg(p,.92,1),x=lerp(270,440,q),y=lerp(276,266,q);h+=mol(x-13,y,c,o)+mol(x+13,y,c,o)+`<line x1="${n1(x-3)}" y1="${n1(y)}" x2="${n1(x+3)}" y2="${n1(y)}" stroke="${C.ink}" stroke-width="3" opacity="${n1(o)}"/>`;}
+ if(done)h+=mol(427,266,c,.35)+mol(453,266,c,.35);return h;};
+S.push({unit:1,title:'酵素的作用',dur:19,loop:false,svg:
+`${T(30,66,'分解作用：較大分子 → 較小分子',{a:'start',w:700,z:15,f:'#a05a00'})}${T(30,224,'合成作用：較小分子 → 較大分子',{a:'start',w:700,z:15,f:GRN})}${T(90,148,'受質',{z:12,f:C.mut})}${T(445,162,'產物',{z:12,f:C.mut})}${T(100,336,'受質',{z:12,f:C.mut})}${T(440,300,'產物',{z:12,f:C.mut})}
+<line x1="530" y1="50" x2="530" y2="360" stroke="#d5d9e2" stroke-width="2"/>${T(662,78,'專一性',{w:700,z:17,f:PUR})}${poly([[610,240],[640,240],[662,264],[684,240],[714,240],[714,288],[610,288]],PUR)}${T(662,282,'酵素',{z:13,w:700,f:'#fff'})}${T(662,318,'例：唾液中的澱粉酶',{z:12,f:C.mut})}${T(662,336,'只能分解澱粉',{z:12,f:C.mut})}
+${T(400,396,'代謝作用 ＝ 分解作用 ＋ 合成作用，都需要酵素（酶）參與',{w:700,z:16})}${T(400,424,'酵素是催化劑：可改變反應速率、可重複使用；酵素和受質之間有專一性',{z:15})}`,
+caps:[[0,'食物中的養分要經過分解和合成，才能被生物體利用。這些反應都需要酵素幫忙。'],[1,'分解作用：受質和酵素結合，較大的分子被分解成較小的分子。酵素本身沒有變，可以再接下一個。'],[7.5,'合成作用：兩個較小的分子和酵素結合，合成較大的分子。酵素一樣可以重複使用。'],[14,'專一性：形狀對得上的受質才能和酵素結合，反應才會加速進行。'],[16,'其他分子無法和這個酵素結合，酵素就發揮不了作用。']],
+tick(t){const A=ALL(t,19);let h='';
+ const a=t>=1&&t<7,b=t>=7.5&&t<13.5,pa=a?((t-1)/3)%1:0,pb=b?((t-7.5)/3)%1:0;
+ const na=A||t>=7?2:a?Math.floor((t-1)/3)+(pa>.55?1:0):0,nb=A||t>=13.5?2:b?Math.floor((t-7.5)/3)+(pb>.55?1:0):0;
+ h+=rowA(pa,na>0&&!(a&&pa>=.55))+T(270,198,'同一個酵素，已作用 '+na+' 次',{z:12,w:700,f:PUR})+rowB(pb,nb>0&&!(b&&pb>=.55))+T(270,348,'同一個酵素，已作用 '+nb+' 次',{z:12,w:700,f:PUR});
+ const tri=(dy,o)=>poly([[627,226+dy],[697,226+dy],[662,264+dy]],ORG,`opacity="${n1(o)}" stroke="${C.ink}" stroke-width="1.5"`),sq=(dx,dy,o)=>RC(640+dx,196+dy,44,44,'#8a93a5',`rx="4" opacity="${n1(o)}" stroke="${C.ink}" stroke-width="1.5"`);
+ if(A){h+=tri(0,1)+sq(62,-50,1);}
+ else if(t<14)h+=tri(-70,.9);
+ else if(t<16)h+=tri(lerp(-70,0,sm(sg(t,14,15.4))),1);
+ else{h+=tri(0,1-sg(t,16,16.4));const d=sm(sg(t,16.2,17.2)),bn=sm(sg(t,17.5,18.3));h+=sq(62*bn+(t>17.2&&t<17.5?3*Math.sin(t*60):0),lerp(-50,0,d)-50*bn,1);}
+ h+=T(662,110,'○ 受質：成功結合',{z:14,w:700,f:GRN,o:A?1:sg(t,15.4,15.8)})+T(662,134,'× 其他分子：無法結合',{z:14,w:700,f:RED,o:A?1:sg(t,17.3,17.7)});
+ return h;},
+points:['較大分子轉變成較小分子，稱為<b>分解</b>作用；較小分子轉變成較大分子，稱為<b>合成</b>作用。','生物體內的分解作用與合成作用合稱為<b>代謝</b>作用，反應過程需要<b>酵素</b>參與。','酵素又稱為<b>酶</b>，是一種<b>催化劑</b>，可改變<b>反應速率</b>，且可以<b>重複使用</b>。','受酵素作用的物質稱為<b>受質</b>；酵素和受質間的關係具有<b>專一性</b>，必須互相結合才能使反應加速。','唾液中的<b>澱粉酶</b>催化的受質是<b>澱粉</b>，遇到其他物質就無法發揮作用。'],
+rhyme:'酵素三特性：專一、可重複用、怕環境變。'});
+
+/* ---------- 5 影響酵素活性 ---------- */
+const FT=v=>v<37?Math.exp(-(((v-37)/17)**2)):Math.exp(-(((v-37)/7)**2));
+const HUMP=[[510,'胃中的酵素',RED],[605,'唾液中的酵素',GRN],[700,'小腸中的酵素',BLU]];
+S.push({unit:1,title:'溫度和酸鹼性會影響酵素',dur:15,loop:false,svg:
+`${T(220,58,'溫度',{w:700,z:17})}${T(605,58,'酸鹼性',{w:700,z:17})}
+<path d="M70 300V78" stroke="${C.ink}" stroke-width="2" marker-end="url(#ahK)"/><path d="M70 300H388" stroke="${C.ink}" stroke-width="2" marker-end="url(#ahK)"/>${[0,10,20,30,40,50,60].map(v=>`<line x1="${70+5*v}" y1="300" x2="${70+5*v}" y2="306" stroke="${C.ink}"/>`+T(70+5*v,322,v,{z:12})).join('')}${T(220,344,'溫度（℃）',{z:12,f:C.mut})}${T(76,72,'酵素的活性',{a:'start',z:12,f:C.mut})}
+<path d="M450 300V78" stroke="${C.ink}" stroke-width="2" marker-end="url(#ahK)"/><path d="M450 300H772" stroke="${C.ink}" stroke-width="2" marker-end="url(#ahK)"/>${T(490,322,'酸性',{z:13})}${T(605,322,'中性',{z:13})}${T(725,322,'鹼性',{z:13})}${T(456,72,'酵素的活性',{a:'start',z:12,f:C.mut})}
+${T(400,392,'大部分酵素的主要成分是蛋白質，活性容易受溫度和酸鹼性影響',{w:700,z:16})}${T(400,420,'超過適宜的溫度或酸鹼性，活性會降低，甚至失去活性',{z:15})}`,
+caps:[[0,'大部分酵素的主要成分是蛋白質，很容易受環境影響。'],[1,'溫度升高，酵素的活性跟著增高。'],[4,'人體內大部分的酵素，在 37℃ 左右活性最大。'],[5.5,'超過適宜的溫度，活性反而降低，甚至失去活性，無法再作用。'],[8,'不同的酵素，適合的酸鹼性也不同。胃裡的酵素在酸性環境活性最大。'],[10,'唾液中的酵素適合接近中性的環境。'],[12,'小腸裡的酵素在鹼性環境活性最大。']],
+tick(t){const A=ALL(t,15);let h='';const v=A?60:60*sg(t,1,7.5);let d='M70 '+n1(300-190*FT(0));for(let x=1;x<=v;x++)d+='L'+(70+5*x)+' '+n1(300-190*FT(x));
+ h+=`<path d="${d}" fill="none" stroke="${PUR}" stroke-width="4" stroke-linejoin="round"/>`;if(!A&&t>=1&&t<7.6)h+=dot(70+5*v,300-190*FT(v),7,PUR,1,'stroke="#fff" stroke-width="2"')+T(70+5*v,300-190*FT(v)-14,Math.round(v)+'℃',{z:13,w:700,f:PUR});
+ const o37=A?1:sg(t,4,4.5);h+=G(o37,`<line x1="255" y1="300" x2="255" y2="110" stroke="${PUR}" stroke-width="1.5" stroke-dasharray="5 5"/>`+T(255,98,'約 37℃',{z:13,w:700,f:PUR}));
+ const oh=A?1:sg(t,6,6.6);h+=T(292,140,'超過適宜的溫度',{a:'start',z:13,f:RED,w:700,o:oh})+T(292,160,'活性降低、失去活性',{a:'start',z:13,f:RED,o:oh});
+ HUMP.forEach(([cx,n,c],i)=>{const q=A?1:sg(t,8+2*i,9.6+2*i);if(q<=0)return;let p='';const x0=cx-58,N=Math.round(116*q);for(let k=0;k<=N;k++){const x=x0+k;p+=(k?'L':'M')+x+' '+n1(300-180*Math.exp(-(((x-cx)/27)**2)));}
+  h+=`<path d="${p}" fill="none" stroke="${c}" stroke-width="4" stroke-linejoin="round"/>`+T(cx,108,n,{z:12.5,w:700,f:c,o:sg(q,.5,.8)});});
+ return h;},
+points:['大部分酵素的主要成分是<b>蛋白質</b>，其活性很容易受<b>環境</b>影響。','酵素的活性隨溫度升高而<b>增高</b>，但超過適宜的溫度，活性會<b>降低</b>，甚至<b>失去活性</b>。','人體內大部分酵素在約 <b>37</b>℃ 時活性最大。','胃內消化液的酵素在<b>酸</b>性環境中活性最大；小腸內消化液的酵素在<b>鹼</b>性環境中活性最大。','在相同條件下，產物生成的數量越多，代表酵素的活性越<b>大</b>。'],
+rhyme:'酵素是蛋白質，怕太熱；胃愛酸、小腸愛鹼。'});
+
+/* ---------- 6 實驗：高溫與酵素 ---------- */
+const X6=['裝入唾液','甲用沸水加熱','加澱粉液、泡溫水','加本氏液、加熱','比較結果'];
+S.push({unit:1,title:'實驗：高溫會不會影響酵素',dur:18,loop:false,svg:
+`${T(125,112,'甲',{w:700,z:24,f:RED})}${T(125,138,'先用沸水加熱 10 分鐘',{z:13})}${T(680,112,'乙',{w:700,z:24,f:BLU})}${T(680,138,'放在室溫',{z:13})}
+${T(400,432,'操縱變因：溫度（有沒有先用沸水加熱）　應變變因：唾液中酵素的活性',{z:14,w:700})}`,
+caps:[[0,'唾液裡有可以分解澱粉的酵素。先用高溫處理過，它還能作用嗎？'],[.1,'甲、乙兩支試管裝入等量的唾液。'],[3,'甲試管放進沸水加熱 10 分鐘，乙試管放在室溫。'],[6.5,'兩管都加入等量的澱粉液，放進 35～40℃ 的溫水裡，等酵素作用。'],[8,'乙試管裡，酵素把澱粉分解成較小的糖。甲試管裡的澱粉沒有變化。'],[10.5,'兩管都加入本氏液，放進沸水隔水加熱。'],[12,'乙試管明顯變色，甲試管還是淡藍色。'],[14.5,'結論：高溫會使酵素失去活性，無法再分解澱粉。']],
+tick(t){if(ALL(t,18))t=18;const st=t<3?0:t<6.5?1:t<10.5?2:t<14.5?3:4;let h='';
+ if(st===1){h+=beaker(245,190,355,325,205,'#fbd9d0')+T(300,348,'沸水',{z:13,w:700,f:RED})+T(500,348,'室溫',{z:13,w:700,f:C.mut});[270,300,330].forEach((x,i)=>h+=LN([[x,182],[x+4*Math.sin(t*4+i),170],[x,158]],'#c9ced8',2.5));}
+ if(st===2)h+=beaker(230,190,570,325,205,'#d9ecf8')+T(400,348,'35～40℃ 溫水',{z:13,w:700,f:BLU});
+ if(st===3){h+=beaker(230,190,570,325,205,'#fbd9d0')+T(400,348,'沸水（隔水加熱）',{z:13,w:700,f:RED})+flame(400,352-18,Math.sin(t*9));}
+ const lv=lerp(lerp(262,215,sg(t,6.5,7.3)),165,sg(t,10.5,11.3)),bn=sg(t,10.5,11.3),base=mix('#e6eef4','#f3efe2',sg(t,6.5,7.3));
+ h+=tube(300,80,300,70,lv,mix(base,BEN[0],bn))+tube(500,80,300,70,lv,mix(base,seqc(BEN,.85*sg(t,12,14)),bn));
+ const po=1-bn;[300,500].forEach((x,j)=>{const dead=j===0&&t>=3.8;[[-16,280],[14,274],[-2,290]].forEach(([dx,y])=>{h+=RC(x+dx-5,y-5,10,10,dead?'#9aa3b5':PUR,`rx="3" opacity="${n1(po)}"`);if(dead)h+=`<path d="M${x+dx-5} ${y-5}l10 10m0 -10l-10 10" stroke="#fff" stroke-width="1.5" opacity="${n1(po)}"/>`;});
+  if(t>=6.8){const sp=j===1?sm(sg(t,8,10)):0;[226,246].forEach((y,r)=>{for(let k=0;k<4;k++){const px=x-18+12*k+(k-1.5)*5*sp,py=y+(k%2?7:-7)*sp;h+=dot(px,py,5,ORG,po*sg(t,6.8,7.3));if(k&&sp<.3)h+=`<line x1="${n1(px-8)}" y1="${n1(py)}" x2="${n1(px-4)}" y2="${n1(py)}" stroke="${ORG}" stroke-width="2" opacity="${n1(po*(1-sp/.3))}"/>`;}});}});
+ const o=sg(t,14.5,15.2);h+=T(125,200,'本氏液不變色',{w:700,z:15,f:BLU,o})+T(125,226,'酵素被高溫破壞',{z:13,o})+T(125,246,'澱粉沒有被分解',{z:13,o})+T(680,200,'本氏液明顯變色',{w:700,z:15,f:RED,o})+T(680,226,'酵素有活性',{z:13,o})+T(680,246,'把澱粉分解成較小的糖',{z:13,o});
+ return h+chips(X6,st);},
+points:['唾液中的酵素可加速<b>澱粉</b>分解；用<b>本氏液</b>是否變色，可檢測澱粉有沒有被分解。','操縱變因：<b>溫度</b>；應變變因：唾液中酵素的<b>活性</b>。','控制變因：唾液的來源與量、澱粉液的濃度與量、本氏液的濃度與量。','甲試管先用沸水加熱，酵素<b>失去活性</b>，本氏液<b>不變色</b>。','乙試管放在室溫，酵素把澱粉分解，本氏液<b>明顯變色</b>。','兩管加入澱粉液後放入 <b>35～40</b>℃ 的溫水，讓酵素在適合的溫度下作用。'],
+rhyme:'煮過的唾液不變色；沒煮的唾液會變色。'});
+
+/* ---------- 7 葉的構造 ---------- */
+const chl=(x,y)=>`<ellipse cx="${x}" cy="${y}" rx="3.2" ry="2.2" fill="#2f8a3a"/>`;
+const LEAF=(()=>{let h=RC(60,78,460,8,'#e9dd9a')+RC(60,276,184,8,'#e9dd9a')+RC(290,276,230,8,'#e9dd9a');
+ for(let k=0;k<10;k++){h+=RC(60+46*k,86,46,26,'#f4f8ec','stroke="#8aa37a" stroke-width="1.5"');if(k!==4)h+=RC(60+46*k,250,46,26,'#f4f8ec','stroke="#8aa37a" stroke-width="1.5"');}
+ for(let k=0;k<20;k++){const x=60+23*k;h+=RC(x+1,114,21,64,'#bfe3a4','rx="6" stroke="#5e9a4a" stroke-width="1.5"')+chl(x+7,128)+chl(x+15,144)+chl(x+8,160);}
+ for(let k=0;k<13;k++){const x=80+36*k+(k%2?8:-4),y=200+(k%3)*13;if(Math.abs(x-430)<48)continue;h+=dot(x,y,15,'#c9e8b0',1,'stroke="#5e9a4a" stroke-width="1.5"')+chl(x-5,y-3)+chl(x+5,y+4);}
+ h+=dot(430,214,30,'#fff8e6',1,'stroke="#8a6f3a" stroke-width="2"')+[[-10,-8],[8,-10],[0,4]].map(([a,b])=>dot(430+a,214+b,7,'#8cc4ee')).join('')+[[-12,12],[12,12]].map(([a,b])=>dot(430+a,214+b,5,ORG)).join('');
+ return h;})();
+const LB7=[['角質層','防止水分散失',560,82,[[552,78],[522,82]],'s'],['上、下表皮','細胞排列整齊、透明無色，保護植物體',560,128,[[552,124],[522,100]],'s'],['葉肉','細胞含葉綠體，行光合作用的主要場所',560,180,[[552,176],[522,150]],'s'],['葉脈','由輸導組織組成，運送水分和養分',560,236,[[552,232],[462,216]],'s'],['保衛細胞','控制氣孔的開閉（有葉綠體）',140,322,[[178,306],[246,272]],'m'],['氣孔','氣體進出、水分蒸散的通道',400,322,[[346,308],[270,288]],'m']];
+S.push({unit:2,title:'葉的構造',dur:14,loop:false,svg:
+`${LEAF}${T(400,396,'葉是植物進行光合作用的主要器官',{w:700,z:16})}${T(400,424,'有葉綠體的細胞：葉肉細胞、保衛細胞（表皮細胞透明無色）',{z:15})}`,
+caps:[[0,'這是葉片切開後的樣子。從上到下，一層一層來看。'],[1,'角質層：蓋在表皮細胞外面，可以防止水分散失。'],[3,'上、下表皮：細胞排列整齊緊密，透明無色，保護植物體不受病菌感染。'],[5,'葉肉：上、下表皮之間的細胞，裡面的綠色顆粒是葉綠體。這裡是行光合作用的主要場所。'],[7,'葉脈：由輸導組織組成，負責運送水分和養分。'],[9,'保衛細胞：半月形，兩兩成對，裡面也有葉綠體，可以控制氣孔的開閉。'],[11,'氣孔：兩個保衛細胞中間的縫隙，是氣體進出和水分蒸散的通道。']],
+tick(t){const A=ALL(t,14);let h='';const op=A?4:3+2.5*Math.sin(t*1.5);
+ h+=`<ellipse cx="${n1(258-op)}" cy="263" rx="9" ry="13" fill="#8fcf6a" stroke="#3f8f3a" stroke-width="1.5"/><ellipse cx="${n1(276+op)}" cy="263" rx="9" ry="13" fill="#8fcf6a" stroke="#3f8f3a" stroke-width="1.5"/>`+chl(258-op,258)+chl(276+op,268);
+ if(!A&&t>=11)h+=flow([[263,300],[263,240]],2,t*.5,'#7b8496',3)+flow([[271,240],[271,300]],2,t*.5,BLU,3);
+ LB7.forEach(([n,d,x,y,ld,m],i)=>{const st=1+2*i,act=A||(t>=st&&t<st+2),o=A?1:t>=st?(act?1:.55):0;if(o<=0)return;const c=act?GRN:C.mut,a=m==='s'?'start':'middle';
+  h+=G(o,LN(ld,c,act?2.5:1.5)+dot(ld[1][0],ld[1][1],act?4:3,c)+T(x,y,n,{a,w:700,z:15,f:act?GRN:C.ink})+T(x,y+18,d,{a,z:12}));});
+ return h;},
+points:['表皮細胞外面有<b>角質層</b>覆蓋，可防止<b>水分散失</b>。','上、下<b>表皮</b>的細胞排列整齊且<b>透明無色</b>，能保護植物體免於病菌感染。','<b>葉肉</b>細胞含有<b>葉綠體</b>，是葉行<b>光合作用</b>的主要場所。','<b>葉脈</b>由<b>輸導組織</b>組成，能運送水分和養分。','半月形的<b>保衛細胞</b>兩兩成對，可控制<b>氣孔</b>的開閉；保衛細胞中也有葉綠體。','<b>氣孔</b>是氣體進出植物體和<b>水分蒸散</b>的通道。'],
+rhyme:'角質防水、表皮保護、葉肉製造、葉脈運送、保衛細胞管氣孔。'});
+
+/* ---------- 8 光合作用 ---------- */
+S.push({unit:2,title:'光合作用',dur:14,loop:false,svg:
+`${[[130,95,310,150],[150,185,290,180],[140,285,310,215],[490,150,650,95],[510,180,650,185],[490,215,650,285]].map(([a,b,c,d])=>`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}" stroke="#d5d9e2" stroke-width="2"/>`).join('')}
+${T(100,132,'光能',{w:700,z:15})}${T(90,190,'二氧化碳',{w:700,z:15})}${T(90,208,'（由氣孔進入）',{z:11,f:C.mut})}${T(90,290,'水',{w:700,z:15,f:BLU})}${T(90,308,'（由根部吸收）',{z:11,f:C.mut})}
+${T(312,338,'水 ＋ 二氧化碳',{a:'end',w:700,z:18})}${AR(322,332,478,332,'K',2.5)}${T(400,324,'光能',{z:12,f:'#a05a00',w:700})}${T(400,350,'葉綠體',{z:12,f:GRN,w:700})}${T(492,338,'氧氣 ＋ 葡萄糖 ＋ 水',{a:'start',w:700,z:18})}
+${T(400,396,'光合作用：葉綠素吸收光能，使水和二氧化碳合成葡萄糖，並釋放出氧氣和水',{w:700,z:15.5})}${T(400,424,'吸收二氧化碳、釋放氧氣，對大氣中氧氣和二氧化碳濃度的穩定很重要',{z:14})}`,
+caps:[[0,'植物除了從土壤吸收水分和礦物質，綠色植物還能自己合成葡萄糖。'],[1,'葉綠體裡的葉綠素等色素吸收光能。'],[3,'根部吸收的水分，和從氣孔進來的二氧化碳，進入葉綠體。'],[6,'合成葡萄糖，並釋放出氧氣和水。'],[10,'葡萄糖可以再轉變成澱粉或其他形式的養分，儲存在植物體內；動物吃了植物，養分就進到動物體內。']],
+tick(t){const A=ALL(t,14);let h='';const lit=A?1:sg(t,1,2.5);
+ h+=dot(100,82,24,'#f6c545')+dot(100,82,24+8*lit,'#f6c545',.3*lit)+`<ellipse cx="400" cy="182" rx="${n1(112+6*lit)}" ry="${n1(62+5*lit)}" fill="#f6c545" opacity="${n1(.3*lit)}"/><ellipse cx="400" cy="182" rx="110" ry="60" fill="#bfe3a4" stroke="#3f8f3a" stroke-width="3"/>`+[[350,178],[400,190],[450,178],[375,208],[425,208]].map(([x,y])=>RC(x-18,y-7,36,14,'#3f8f3a','rx="5"')).join('')+T(400,152,'葉綠體（含葉綠素）',{z:13,w:700,f:'#1f5c2a'});
+ if(!A){if(t>=1)h+=flow([[130,95],[310,150]],4,t*.45,'#f0b020',5);if(t>=3)h+=flow([[150,185],[290,180]],3,t*.4,'#7b8496',5)+flow([[140,285],[310,215]],3,t*.4,BLU,5);
+  if(t>=6)h+=flow([[490,150],[650,95]],3,t*.4,RED,5)+flow([[510,180],[650,185]],3,t*.4,ORG,6)+flow([[490,215],[650,285]],3,t*.4,BLU,5);}
+ const o=A?1:sg(t,6,7);h+=T(710,100,'氧氣',{w:700,z:15,f:RED,o})+T(710,190,'葡萄糖',{w:700,z:15,f:'#a05a00',o})+T(710,290,'水',{w:700,z:15,f:BLU,o});
+ h+=T(400,280,'葡萄糖可再轉變成澱粉等養分，儲存在植物體內',{z:13,w:700,f:'#a05a00',o:A?1:sg(t,10,11)});
+ return h;},
+points:['光合作用在<b>葉綠體</b>內進行；葉綠體內的<b>葉綠素</b>等色素可吸收<b>光能</b>。','反應物：根部吸收的<b>水</b>，和經由<b>氣孔</b>進來的<b>二氧化碳</b>。','產物：<b>葡萄糖</b>、<b>氧氣</b>和<b>水</b>。','葡萄糖可更進一步轉變成<b>澱粉</b>或其他形式的養分，儲存在植物體內。','光合作用吸收<b>二氧化碳</b>並釋放<b>氧氣</b>，對大氣中兩者濃度的穩定非常重要。'],
+rhyme:'光、水、二氧化碳進去；葡萄糖、氧氣、水出來。'});
+
+/* ---------- 9 光合作用實驗 ---------- */
+const X9=['鋁箔遮光 5～7 天','沸水加熱','酒精隔水加熱','熱水漂洗','加碘液'];
+const WHY9=['用鋁箔包住葉片中間一段，讓這一段照不到光','摘下葉片、拿掉鋁箔，放進沸水，使角質層軟化','用酒精溶出葉片的色素；酒精易燃，一定要隔水加熱','葉片褪色後，放進熱水裡漂洗','碘液遇到澱粉會變成藍黑色'];
+const LFP='M250 195Q400 95 550 195Q400 295 250 195Z';
+const leaf=(a,b)=>`<g clip-path="url(#lf)">${RC(240,90,320,210,a)}${RC(365,90,70,210,b)}</g><path d="${LFP}" fill="none" stroke="#3f6f3a" stroke-width="2.5"/><path d="M250 195H550" stroke="#3f6f3a" stroke-width="1.5" opacity=".6"/>`;
+S.push({unit:2,title:'實驗：光合作用需要光',dur:18,loop:false,svg:
+`<clipPath id="lf"><path d="${LFP}"/></clipPath>${T(400,432,'結論：植物需要光照才能進行光合作用，合成養分（葡萄糖再轉變成澱粉儲存）',{z:14,w:700})}`,
+caps:[[0,'角落照不到光的植物長得比較差。光照和光合作用有關嗎？'],[.1,'選一片葉子，用鋁箔包住中間一段遮光，等 5～7 天。同一片葉子，只有「有沒有照光」不一樣。'],[3.5,'摘下葉片、拿掉鋁箔，放進沸水裡加熱幾分鐘，讓角質層軟化。'],[6.5,'把葉片泡進酒精，隔水加熱。葉片的綠色慢慢褪掉，酒精變成綠色。'],[10.5,'葉片褪色後，放進熱水裡漂洗。'],[13,'把葉片平放在培養皿裡，加入碘液。'],[15,'照到光的部分變成藍黑色，表示有澱粉；被鋁箔遮住的部分沒有變藍黑色，表示沒有澱粉。']],
+tick(t){if(ALL(t,18))t=18;const st=t<3.5?0:t<6.5?1:t<10.5?2:t<13?3:4;let h='';const GR='#4fa64a',PALE='#efe9c9';
+ if(st===0){h+=dot(120,130,26,'#f6c545')+flow([[150,140],[300,180]],4,t*.4,'#f0b020',4)+leaf(GR,GR)+RC(360,136,80,118,'#cfd4dc','rx="3" stroke="#8a93a5" stroke-width="2"')+T(400,200,'鋁箔',{z:14,w:700})+dot(400,144,5,'none',1,'stroke="#56665e" stroke-width="2"');}
+ if(st===1){h+=beaker(180,100,620,312,120,'#fbd9d0')+leaf(GR,GR)+flame(400,340,Math.sin(t*9))+T(660,210,'沸水',{z:14,w:700,f:RED});}
+ if(st===2){const q=sg(t,7.2,10);h+=beaker(170,96,630,316,122,'#fbd9d0')+RC(215,128,370,172,'#fff')+beaker(215,108,585,300,128,mix('#f4fbf2','#9fd08a',q))+leaf(mix(GR,PALE,q),mix(GR,PALE,q))+flame(400,342,Math.sin(t*9))+T(700,180,'外：沸水',{z:13,w:700,f:RED})+T(700,204,'內：酒精',{z:13,w:700,f:GRN});}
+ if(st===3){h+=beaker(180,100,620,312,120,'#d9ecf8')+leaf(PALE,PALE)+T(660,210,'熱水',{z:14,w:700,f:BLU});}
+ if(st===4){const q=sg(t,13.8,16),o=sg(t,15.6,16.2);h+=`<ellipse cx="400" cy="200" rx="225" ry="108" fill="#fbf3dc" stroke="${C.ink}" stroke-width="2.5"/>`+leaf(mix(PALE,'#27305e',q),mix(PALE,'#e3c47a',q))+G(o,LN([[246,334],[300,212]],C.mut,1.5)+LN([[520,334],[404,222]],C.mut,1.5)+T(215,352,'照光的部分：變藍黑色，有澱粉',{z:13,w:700,f:'#27305e'})+T(565,352,'遮光的部分：沒變藍黑，沒有澱粉',{z:13,w:700,f:'#8a5a12'}));}
+ h+=T(400,72,WHY9[st],{z:15,w:700});
+ return h+chips(X9,st);},
+points:['操縱變因：<b>照光</b>（用<b>鋁箔</b>包住葉片的一段來遮光）。','使用<b>同一葉片</b>，是為了讓環境與植物的生理條件一致（控制變因）。','葉片放入<b>沸水</b>加熱，可使<b>角質層</b>軟化。','用<b>酒精</b>隔水加熱，可溶出葉片的色素；酒精<b>易燃</b>，不可直接放在火上加熱。','用<b>碘液</b>檢測：照光的部分變<b>藍黑</b>色，有澱粉；遮光的部分沒有澱粉。','結論：植物需要<b>光照</b>才能進行光合作用。'],
+rhyme:'遮光、煮葉、酒精褪色、漂洗、滴碘液。'});
+
+/* ---------- 10 消化作用 ---------- */
+const AAC=['#d43d3d','#2f6fd6','#2f9e6b','#7a4fc7','#e08a1e','#b0457f'];
+const R10=[{n:'澱粉',s:'葡萄糖',y:95,u:[0,1,2,3,4,5].map(k=>({bx:160+24*k,by:0,sx:392+32*k,sy:0,cx:660+22*k,cy:0,d:(x,y,o)=>dot(x,y,11,ORG,o,`stroke="${C.ink}" stroke-width="1.5"`)}))},
+ {n:'蛋白質',s:'胺基酸',y:175,u:[0,1,2,3,4,5].map(k=>({bx:160+24*k,by:0,sx:392+32*k,sy:0,cx:660+22*k,cy:0,d:(x,y,o)=>dot(x,y,11,AAC[k],o,`stroke="${C.ink}" stroke-width="1.5"`)}))},
+ {n:'脂質',s:'脂肪酸和甘油',y:255,u:[{bx:166,by:0,sx:400,sy:0,cx:658,cy:0,d:(x,y,o)=>RC(x-5,y-21,10,42,'#56665e',`rx="3" opacity="${n1(o)}"`)},...[-14,0,14].map((dy,k)=>({bx:208,by:dy,sx:478,sy:dy*1.35,cx:718,cy:dy*1.25,d:(x,y,o)=>`<ellipse cx="${n1(x)}" cy="${n1(y)}" rx="34" ry="5.5" fill="${PUR}" opacity="${n1(o)}"/>`}))]}];
+S.push({unit:3,title:'消化作用：把大分子變小',dur:14,loop:false,svg:
+`${RC(634,60,150,262,'#fdf3d6','opacity=".7"')}${RC(626,56,8,270,'#c9a66b')}${T(630,48,'細胞膜',{z:13,w:700})}${T(712,75,'細胞內',{z:12,f:C.mut})}${R10.map(r=>T(40,r.y+6,r.n,{a:'start',w:700,z:17})).join('')}
+${T(400,396,'消化作用：把較大分子的養分轉變成較小分子養分的過程',{w:700,z:16})}${T(400,424,'動物獲得養分的過程：攝食 → 消化 → 吸收',{z:15})}`,
+caps:[[0,'動物吃進來的養分大多是較大的分子，像澱粉、蛋白質、脂質。'],[1,'這些較大的分子無法直接通過細胞膜，進不了細胞。'],[4,'澱粉被分解成葡萄糖。'],[5.5,'蛋白質被分解成胺基酸。'],[7,'脂質被分解成脂肪酸和甘油。'],[9.5,'變成較小的分子之後，才能通過細胞膜，進入細胞內被利用。']],
+tick(t){const A=ALL(t,14);let h='';const bo=A||t<1||t>3.2?0:300*Math.sin(PI*sg(t,1,3.2))**.8;
+ R10.forEach((r,i)=>{const sp=A?1:sm(sg(t,4+1.5*i,5.3+1.5*i)),ps=A?1:sm(sg(t,9.5+.6*i,11.5+.6*i));
+  if(sp>0){r.u.forEach(u=>h+=u.d(u.bx,r.y+u.by,.22));h+=G(sp,AR(304,r.y,366,r.y,'K',2.5)+T(335,r.y-9,'消化',{z:12,f:C.mut}));}
+  r.u.forEach(u=>{const x=lerp(lerp(u.bx+bo,u.sx,sp),u.cx,ps),y=r.y+lerp(lerp(u.by,u.sy,sp),u.cy,ps);h+=u.d(x,y,1);});
+  if(sp<.5&&i<2)for(let k=1;k<6;k++)h+=`<line x1="${n1(160+24*k-13+bo)}" y1="${r.y}" x2="${n1(160+24*k-11+bo)}" y2="${r.y}" stroke="${C.ink}" stroke-width="3"/>`;
+  h+=T(lerp(472,712,ps),r.y+(i===2?42:34),r.s,{z:13,w:700,f:GRN,o:sg(sp,.7,1)});});
+ if(!A&&t>=1.4&&t<4)h+=T(400,330,'較大分子：無法直接通過細胞膜',{w:700,z:14,f:RED});
+ h+=T(400,330,'較小分子：可以通過細胞膜，進入細胞被利用',{w:700,z:14,f:GRN,o:A?1:sg(t,10,10.6)});
+ return h;},
+points:['動物獲得養分的過程包括<b>攝食</b>、<b>消化</b>和<b>吸收</b>。','較大的分子無法直接通過<b>細胞膜</b>，必須先分解成較小的分子，才能進入細胞內被利用。','<b>澱粉</b>分解成<b>葡萄糖</b>。','<b>蛋白質</b>分解成<b>胺基酸</b>。','<b>脂質</b>分解成<b>脂肪酸</b>和<b>甘油</b>。','將較大分子養分轉變成較小分子養分的過程，稱為<b>消化作用</b>。'],
+rhyme:'澱粉變葡萄糖，蛋白質變胺基酸，脂質變脂肪酸和甘油。'});
+
+/* ---------- 11 消化道與消化腺 ---------- */
+const PA=[[210,72],[210,160],[250,190]],PB=[[250,190],[215,212],[200,250],[175,262],[275,262],[275,282],[175,282],[175,302],[275,302],[275,322],[175,322]],PC=[[175,322],[150,336],[150,248],[300,248],[300,336],[225,350],[225,366]];
+const R11=[['① 口腔',['牙齒咬碎、咀嚼食物；唾腺分泌唾液','唾液中的酵素可初步分解醣類（澱粉）'],58,1,3.5],['② 咽、食道',['咽控制食物進入食道；食道蠕動，把食物推進胃'],116,3.5,5.5],['③ 胃',['攪拌和暫時儲存食物；胃腺分泌胃液','胃液含鹽酸和酵素，可初步分解蛋白質'],158,5.5,9],['④ 小腸',['膽汁（肝臟分泌）：乳化脂質，不含酵素','胰液（胰臟分泌）：分解醣類、蛋白質、脂質','腸液（腸腺分泌）：分解醣類、蛋白質'],216,9,14.5],['⑤ 大腸、肛門',['吸收剩餘的水分；糞便由肛門排出'],290,14.5,18.5]];
+const lab11=(x,y,s,a,tx,ty)=>T(x,y,s,{a,z:13,w:700})+(tx?LN([[a==='end'?x+4:x-4,y-5],[tx,ty]],C.mut,1.2)+dot(tx,ty,2.5,C.mut):'');
+S.push({unit:3,title:'人體的消化道與消化腺',dur:20,loop:false,svg:
+`${LN([[175,322],[150,336],[150,248],[300,248],[300,336],[225,350],[225,364]],'#d9a08a',18)}${LN([[210,82],[210,160]],'#f2b8a8',12)}<ellipse cx="150" cy="180" rx="52" ry="26" fill="#a8553f"/><ellipse cx="166" cy="212" rx="8" ry="12" fill="#5fae5a"/><ellipse cx="250" cy="190" rx="48" ry="30" fill="#f4b6a6" stroke="#c9826b" stroke-width="2" transform="rotate(-20 250 190)"/><ellipse cx="262" cy="233" rx="38" ry="9" fill="#e9c46a" stroke="#b9963a" stroke-width="1.5"/>
+${LN(PB.slice(1),'#f2b8a8',13)}${LN([[168,222],[198,246]],'#5fae5a',3)}${LN([[232,236],[204,248]],'#b9963a',3)}<ellipse cx="210" cy="72" rx="34" ry="15" fill="#f6c9bd" stroke="#c9826b" stroke-width="2"/><ellipse cx="258" cy="94" rx="12" ry="8" fill="#b79be0"/>${dot(225,366,5,'#8a6f5a')}
+${lab11(165,76,'口腔','end')}${lab11(278,98,'唾腺','start')}${lab11(192,104,'咽','end')}${lab11(192,138,'食道','end')}${lab11(312,182,'胃','start')}${lab11(88,176,'肝臟','end')}${lab11(120,226,'膽囊','end',158,214)}${lab11(312,226,'胰臟','start')}${lab11(338,300,'小腸','start',270,296)}${lab11(120,296,'大腸','end',142,292)}${lab11(245,372,'肛門','start')}
+<line x1="425" y1="48" x2="425" y2="360" stroke="#d5d9e2" stroke-width="2"/>
+${T(400,394,'消化道（食物經過）：口腔 → 咽 → 食道 → 胃 → 小腸 → 大腸 → 肛門',{w:700,z:15.5})}${T(400,422,'消化腺（分泌消化液）：唾腺、胃腺、肝臟、胰臟、腸腺',{w:700,z:15.5})}`,
+caps:[[0,'消化系統包括消化道和消化腺。跟著這一口食物走一趟。'],[1,'口腔：牙齒把食物咬碎，唾腺分泌唾液，唾液中的酵素初步分解醣類（澱粉）。'],[3.5,'咽控制食物進入食道，食道管壁一張一縮（蠕動），把食物往下推。'],[5.5,'胃：攪拌和暫時儲存食物。胃腺分泌的胃液含有鹽酸和酵素，鹽酸可殺菌並活化酵素，初步分解蛋白質。'],[9,'小腸：肝臟分泌的膽汁（儲存在膽囊）和胰臟分泌的胰液，經由導管送進小腸；腸腺也分泌腸液。'],[11.5,'膽汁不含酵素，但能把脂質乳化成小的脂肪球；胰液可分解醣類、蛋白質和脂質；小腸內的酵素主要分解醣類和蛋白質。'],[14.5,'大腸：吸收剩餘的水分，食物殘渣形成糞便，由肛門排出。']],
+tick(t){const A=ALL(t,20);let h='';
+ if(!A){let p=null;if(t<3.5)p=[210+6*Math.sin(t*7)*(t>=1),72];else if(t<5.5)p=along(PA,plen(PA)*sm(sg(t,3.5,5.5)));else if(t<9)p=[250+10*Math.cos(t*3),190+6*Math.sin(t*3)];else if(t<14.5)p=along(PB,plen(PB)*sg(t,9,14.5));else if(t<18.5)p=along(PC,plen(PC)*sg(t,14.5,18.5));
+  if(t>=1&&t<3.5)h+=flow([[254,92],[226,78]],2,t*.8,'#7a4fc7',3);
+  if(t>=9&&t<14.5)h+=flow([[168,222],[198,246]],2,t*.7,'#2f8a3a',3.5)+flow([[232,236],[204,248]],2,t*.7,'#b9963a',3.5);
+  if(p)h+=dot(p[0],p[1],8,'#7a4a1e',1,'stroke="#fff" stroke-width="2"');}
+ R11.forEach(([n,l,y,a,b])=>{const act=A||(t>=a&&t<b),o=A?1:t>=a?1:.3;h+=G(o,(act?RC(436,y-15,5,24+16*l.length,ORG):'')+T(448,y,n,{a:'start',w:700,z:15,f:act?'#a05a00':C.ink})+l.map((s,i)=>T(448,y+18+16*i,s,{a:'start',z:12.5})).join(''));});
+ return h;},
+points:['消化系統包括<b>消化道</b>和<b>消化腺</b>。','消化道：<b>口腔、咽、食道、胃、小腸、大腸、肛門</b>；管壁的收縮運動可推進食物，並幫助食物和消化液混合。','消化腺：<b>唾腺、胃腺、肝臟、胰臟、腸腺</b>；可分泌消化液，加速食物分解。','<b>唾液</b>：初步分解<b>醣類</b>（澱粉）。','<b>胃液</b>含<b>鹽酸</b>和酵素；鹽酸可殺菌並活化酵素，初步分解<b>蛋白質</b>。','<b>膽汁</b>由<b>肝臟</b>分泌、儲存在<b>膽囊</b>，<b>不含</b>消化酵素，可<b>乳化</b>脂質。','<b>胰液</b>可分解<b>醣類、蛋白質和脂質</b>；小腸內的酵素主要分解<b>醣類和蛋白質</b>。'],
+rhyme:'唾液醣、胃液蛋、膽汁乳化脂、胰液三種都分解、腸液醣和蛋。'});
+
+/* ---------- 12 小腸絨毛與大腸 ---------- */
+const VX=[130,230,330,430];
+const P12=[...Array(12)].map((_,k)=>{const i=k%4,s=k%2?1:-1,cx=VX[i],sx=110+((k*83)%330),sy=66+((k*37)%44);return{c:[ORG,PUR,BLU][k%3],pts:[[sx,sy],[cx+s*24,128],[cx+s*14,172],[cx+s*14,300],[cx+s*14,315],[472,315]],k};});
+S.push({unit:3,title:'小腸絨毛的吸收與大腸',dur:15,loop:false,svg:
+`${RC(96,300,368,30,'#f0b9a6')}${VX.map(cx=>`<path d="M${cx-34} 302V170Q${cx-34} 132 ${cx} 132Q${cx+34} 132 ${cx+34} 170V302Z" fill="#f7c9b8" stroke="#c9826b" stroke-width="2"/><path d="M${cx-14} 315V182Q${cx-14} 152 ${cx} 152Q${cx+14} 152 ${cx+14} 182V315" fill="none" stroke="#e06a6a" stroke-width="3"/>`).join('')}<path d="M96 315H472" stroke="#e06a6a" stroke-width="4" marker-end="url(#ahR)"/>
+${T(56,204,'絨毛',{z:13,w:700})}${LN([[76,200],[96,200]],C.mut,1.2)}${T(52,254,'微血管',{z:13,w:700,f:RED})}${LN([[76,250],[116,250]],C.mut,1.2)}${T(280,352,'微血管網把吸收的養分和水分送到全身',{z:13,f:RED,w:700})}
+${dot(120,52,5,ORG)}${T(130,57,'葡萄糖',{a:'start',z:12})}${dot(200,52,5,PUR)}${T(210,57,'胺基酸',{a:'start',z:12})}${dot(280,52,5,BLU)}${T(290,57,'水',{a:'start',z:12})}
+${T(400,394,'小腸：分解食物、吸收養分和水分的主要場所（大部分的水分在小腸被吸收）',{w:700,z:15})}${T(400,422,'大腸：吸收剩餘的水分；食物殘渣形成糞便，經由肛門排出，稱為排遺',{w:700,z:15})}`,
+caps:[[0,'把小腸內壁放大來看：上面有很多指狀的突起，叫做絨毛。'],[1,'消化後的較小分子養分和水分，在小腸裡。'],[4,'絨毛讓吸收的表面積變大，養分和水分被絨毛吸收。'],[8,'絨毛裡面有微血管網，把吸收的養分和水分送到全身，供細胞利用。'],[12,'剩下的水分在大腸被吸收；不能被吸收的食物殘渣形成糞便，由肛門排出。']],
+tick(t){const A=ALL(t,15);let h='';
+ if(!A)P12.forEach(({c,pts,k})=>{const p=sg(t,4+.33*k,8.6+.33*k);if(p>=1)return;const[x,y]=along(pts,plen(pts)*p);h+=dot(x+(p<=0?5*Math.sin(t*2+k):0),y+(p<=0?4*Math.cos(t*1.7+k):0),5.5,c,1,'stroke="#fff" stroke-width="1"');});
+ h+=card(500,52,280,128,'絨毛',['小腸內壁有環狀皺褶','皺褶上的指狀突起稱為絨毛','可增加吸收的表面積'],ORG,A?1:t>=4?1:.3,A||(t>=4&&t<8))+card(500,196,280,128,'微血管網',['絨毛內含有微血管網','把吸收的養分和水分','送至全身，供細胞利用'],RED,A?1:t>=8?1:.3,A||(t>=8&&t<12));
+ return h;},
+points:['<b>小腸</b>是分解食物以及吸收養分、水分的<b>主要場所</b>。','小腸內壁有很多環狀<b>皺褶</b>，皺褶上像指狀的突起稱為<b>絨毛</b>，可增加吸收的<b>表面積</b>。','絨毛內含有<b>微血管網</b>，可將所吸收的養分及水分送至全身，供細胞利用。','人體攝取的水分，大部分在<b>小腸</b>被吸收，剩餘的水分則在<b>大腸</b>被吸收。','食物殘渣形成<b>糞便</b>經由肛門排出，稱為<b>排遺</b>。','<b>盲腸</b>是大腸的起點，上面的指狀突起稱為<b>闌尾</b>。'],
+rhyme:'小腸絨毛面積大，養分水分它吸收；大腸再收剩的水。'});
+
+/* ---------- 13 給你的一段話 ---------- */
+const MSG=[['大分子要先分解成小分子','大目標吞不下去，就拆成一小口一小口。',ORG],['酵素可以重複使用','學會的方法不會用完，越用越順手。',PUR],['葡萄糖會存成澱粉','今天照到的光，都會變成你存下來的養分。',GRN],['絨毛讓吸收的面積變大','多問、多看、多練習，吸收得就更多。',BLU]];
+S.push({unit:4,title:'給你的一段話',dur:16,loop:false,svg:
+`${RC(450,300,330,140,'#e9dcc3','rx="10" opacity=".7"')}${T(615,426,'一點一點存起來的養分',{z:13,f:'#7a5a2a'})}`,
+caps:[[0,'這一章學的養分，也可以拿來看自己的學習。'],[1,'澱粉、蛋白質、脂質，都要先變小才吸收得了。'],[5,'酵素幫完一個受質，還能再幫下一個。'],[9,'植物把每天合成的葡萄糖，轉成澱粉存起來。'],[13,'小腸靠皺褶和絨毛，把吸收的表面積變大。'],[15,'一口一口消化，一天一天累積，你一定會長大。加油！']],
+tick(t){const A=t>=15.9,u=A?1:sg(t,.5,14.5);let h='';const top=300-175*u;
+ h+=dot(735,92,26,'#f6c545')+dot(735,92,32+4*Math.sin(t*3),'#f6c545',.3);if(!A)h+=flow([[708,108],[650,lerp(280,170,u)]],3,t*.4,'#f0b020',4);
+ h+=`<ellipse cx="615" cy="352" rx="${n1(16+44*u)}" ry="${n1(8+20*u)}" fill="#d9822b" stroke="#8a4a12" stroke-width="2"/>`+LN([[615,340],[615,top]],'#3f8f3a',6);
+ [[45,-1],[85,1],[125,-1],[158,1]].forEach(([hh,s])=>{const q=sg(175*u,hh,hh+25);if(q<=0)return;const y=300-hh,w=46*q;h+=`<path d="M615 ${y}Q${n1(615+s*w*.5)} ${n1(y-22*q)} ${n1(615+s*w)} ${n1(y-8*q)}Q${n1(615+s*w*.5)} ${n1(y+10*q)} 615 ${y}Z" fill="#6fbf5a" stroke="#3f8f3a" stroke-width="1.5"/>`;});
+ if(!A&&u>.3)h+=flow([[615,top+20],[615,345]],3,t*.5,ORG,4);
+ MSG.forEach(([ti,l,c],i)=>{const o=A?1:sg(t,1+4*i,1.8+4*i),yy=64+88*i;h+=G(o,RC(20,yy-22,5,56,c)+T(36,yy,ti,{a:'start',w:700,z:18,f:c})+T(36,yy+27,l,{a:'start',z:14}));});
+ h+=T(215,426,'一口一口消化，一天一天累積，你一定會長大。加油！',{w:700,z:16,o:A?1:sg(t,15,15.6)});
+ return h;},
+points:['較大的分子要先<b>分解</b>成較小的分子，才能被吸收。大目標吞不下去，就拆成一小口一小口。','<b>酵素</b>可以<b>重複使用</b>。學會的方法不會用完，越用越順手。','光合作用合成的葡萄糖會轉成<b>澱粉</b>儲存。今天照到的光，都會變成你存下來的養分。','<b>絨毛</b>增加吸收的<b>表面積</b>。多問、多看、多練習，吸收得就更多。','胃的酵素適合<b>酸</b>性，小腸的酵素適合<b>鹼</b>性。每個人適合的方法不一樣，找到自己的就好。'],
+rhyme:'拆小口、重複練、天天存、多吸收。'});
+
+</script>
+
+<script>
+/* ---------- 播放器 ---------- */
+(function(){
+const $=id=>document.getElementById(id);
+const stat=$('stat'),dyn=$('dyn'),cap=$('cap'),play=$('play'),seek=$('seek'),next=$('next'),prev=$('prev'),notes=$('notes');
+let i=0,t=0,playing=false,last=0,reciting=false;const seen=new Set();
+try{const v=parseInt(localStorage.getItem('nutrient-stage'),10);if(v>=0&&v<S.length)i=v;}catch(e){}
+
+S.forEach((s,k)=>{
+  if(k>0&&s.unit!==S[k-1].unit){const g=document.createElement('li');g.className='gap';g.setAttribute('aria-hidden','true');$('steps').appendChild(g);}
+  const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.textContent=k+1;b.title=s.title;b.setAttribute('aria-label','階段 '+(k+1)+'：'+s.title);
+  b.addEventListener('click',()=>go(k));li.appendChild(b);$('steps').appendChild(li);s.btn=b;});
+UNITS.forEach((u,k)=>{const b=document.createElement('button');b.type='button';b.textContent=u;b.addEventListener('click',()=>go(S.findIndex(s=>s.unit===k)));$('units').appendChild(b);});
+
+function local(){const s=S[i];return s.loop?t%s.dur:Math.min(t,s.dur);}
+function draw(){const s=S[i],lt=local();dyn.innerHTML=s.tick(lt);
+  let c=s.caps[0][1];for(const[a,txt]of s.caps)if(lt>=a)c=txt;if(cap.textContent!==c)cap.textContent=c;
+  seek.value=Math.round(lt/s.dur*1000);}
+function ui(){const s=S[i],end=!s.loop&&t>=s.dur;
+  play.textContent=playing?'⏸ 暫停':end?'↺ 再看一次':t>0?'▶ 繼續':'▶ 開始';
+  next.classList.toggle('ready',seen.has(i)&&i<S.length-1);next.disabled=i===S.length-1;prev.disabled=i===0;
+  S.forEach((x,k)=>{x.btn.classList.toggle('seen',seen.has(k));x.btn.setAttribute('aria-current',k===i?'true':'false');});
+  [...$('units').children].forEach((b,k)=>b.setAttribute('aria-current',k===s.unit?'true':'false'));
+  $('hint').textContent=reciting?'點一下空格就能看答案。先在心裡說出答案，再點開核對。':seen.has(i)?(i<S.length-1?'看完了。試著不看筆記說一次重點，再按「下一階段」。':'全部看完了。開啟背誦模式，從第 1 階段再檢查一次自己。'):'按「開始」看動畫，隨時可以暫停或拖動進度條重看。';}
+function go(k){i=cl(k,0,S.length-1);t=0;playing=false;const s=S[i];
+  stat.innerHTML=s.svg;$('num').textContent=UNITS[s.unit]+'・階段 '+(i+1)+'／'+S.length;$('title').textContent=s.title;
+  $('points').innerHTML=s.points.map(p=>'<li>'+p.replace(/<b>/g,'<b class="k" tabindex="0">')+'</li>').join('');$('rhyme').textContent=s.rhyme;
+  try{localStorage.setItem('nutrient-stage',i);}catch(e){}
+  draw();ui();}
+function frame(now){if(!playing)return;t+=Math.min(.1,(now-last)/1000);last=now;const s=S[i];
+  if(t>=s.dur&&!seen.has(i)){seen.add(i);ui();}
+  if(!s.loop&&t>=s.dur){t=s.dur;playing=false;ui();}
+  draw();if(playing)requestAnimationFrame(frame);}
+function toggle(){const s=S[i];if(playing){playing=false;}else{if(!s.loop&&t>=s.dur)t=0;playing=true;last=performance.now();requestAnimationFrame(frame);}ui();}
+
+play.addEventListener('click',toggle);
+$('replay').addEventListener('click',()=>{t=0;draw();if(!playing)toggle();});
+seek.addEventListener('input',()=>{playing=false;t=seek.value/1000*S[i].dur;draw();ui();});
+next.addEventListener('click',()=>go(i+1));prev.addEventListener('click',()=>go(i-1));
+$('recite').addEventListener('click',e=>{reciting=!reciting;notes.classList.toggle('reciting',reciting);e.currentTarget.setAttribute('aria-pressed',reciting);e.currentTarget.textContent=reciting?'顯示全部關鍵字':'背誦模式：遮住關鍵字';notes.querySelectorAll('.k.open').forEach(k=>k.classList.remove('open'));ui();});
+$('points').addEventListener('click',e=>{const k=e.target.closest('.k');if(k&&reciting)k.classList.toggle('open');});
+$('points').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('k')&&reciting){e.preventDefault();e.target.classList.toggle('open');}});
+document.addEventListener('keydown',e=>{if(e.target.closest('button,input,.k'))return;if(e.key===' '){e.preventDefault();toggle();}else if(e.key==='ArrowRight')go(i+1);else if(e.key==='ArrowLeft')go(i-1);});
+go(i);
+})();
+</script>
+</body>
+</html>
