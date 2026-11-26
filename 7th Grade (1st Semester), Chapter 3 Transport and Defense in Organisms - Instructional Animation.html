@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>生物的運輸與防禦 教學動畫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 版面：左邊是動畫舞台與播放控制，右邊是可遮字背誦的重點筆記；窄螢幕時上下堆疊 */
+  --paper:#f1f5ee; --card:#ffffff; --ink:#17251f; --muted:#56665e; --line:#d3dcd1;
+  --accent:#1f7a5c; --accent-soft:#dcefe6; --memo:#fff4cc;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;padding:18px 20px 12px;max-width:1280px;margin:0 auto}
+.eyebrow{font-size:13px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-size:26px;margin:0;line-height:1.25}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,.k:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+nav button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px;padding:0 20px 28px;max-width:1280px;margin:0 auto;align-items:start}
+.stage,.notes{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stagehead{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-bottom:8px}
+#num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.06em}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+svg#svg{display:block;width:100%;height:auto;background:#fbfcfa;border:1px solid var(--line);border-radius:12px}
+svg text{font-family:var(--body)}
+.cap{min-height:3.2em;margin:10px 2px 8px;font-size:17px;font-weight:500}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;min-width:116px;padding:10px 16px}
+.primary:hover{filter:brightness(1.08)}
+#seek{flex:1 1 160px;accent-color:var(--accent);min-width:120px}
+.nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0;justify-content:center;flex:1 1 200px}
+#steps button{width:30px;height:30px;padding:0;border-radius:50%;font-size:13px;font-variant-numeric:tabular-nums}
+#steps button.seen{background:var(--accent-soft);border-color:var(--accent)}
+#steps button[aria-current="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+#steps li.gap{width:8px}
+#next.ready{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.noteshead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+h3{font-family:var(--display);font-size:19px;margin:0}
+#recite[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+#points{margin:12px 0;padding-left:1.2em;display:flex;flex-direction:column;gap:9px}
+.k{font-weight:700;color:var(--accent);border-radius:4px;padding:0 2px}
+.reciting .k{color:transparent;background:var(--accent-soft);border-bottom:2px solid var(--accent);cursor:pointer;user-select:none}
+.reciting .k.open{color:var(--accent);background:none;border-bottom-color:transparent}
+.rhyme{background:var(--memo);border-radius:12px;padding:10px 14px}
+.rhyme span{font-size:12px;font-weight:700;letter-spacing:.1em;color:#7a5a00}
+.rhyme p{margin:2px 0 0;font-family:var(--display);font-size:19px;line-height:1.5}
+.hint{font-size:14px;color:var(--muted);margin:12px 2px 0}
+@media (max-width:860px){main{grid-template-columns:1fr}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="eyebrow">國中自然 1 上・第 3 章</div><h1>生物的運輸與防禦</h1></div>
+  <nav id="units" aria-label="單元"></nav>
+</header>
+<main>
+  <section class="stage" aria-label="動畫">
+    <div class="stagehead"><span id="num"></span><h2 id="title"></h2></div>
+    <svg id="svg" viewBox="0 0 800 450" role="img" aria-labelledby="title">
+      <defs>
+        <marker id="ahR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d43d3d"/></marker>
+        <marker id="ahB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4a63c9"/></marker>
+        <marker id="ahK" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#56665e"/></marker>
+        <linearGradient id="gcap" gradientUnits="userSpaceOnUse" x1="270" x2="530" y1="0" y2="0"><stop offset="0" stop-color="#e86a5e"/><stop offset="1" stop-color="#7f8fe0"/></linearGradient>
+        <linearGradient id="gcap2" gradientUnits="userSpaceOnUse" x1="40" x2="520" y1="0" y2="0"><stop offset="0" stop-color="#f08a80"/><stop offset="1" stop-color="#a9b4ea"/></linearGradient>
+      </defs>
+      <g id="stat"></g><g id="dyn"></g>
+    </svg>
+    <p class="cap" id="cap" aria-live="polite"></p>
+    <div class="controls">
+      <button id="play" class="primary" type="button">▶ 開始</button>
+      <button id="replay" type="button">↺ 從頭播放</button>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="動畫進度">
+    </div>
+    <div class="nav">
+      <button id="prev" type="button">← 上一階段</button>
+      <ol id="steps" aria-label="階段"></ol>
+      <button id="next" type="button">下一階段 →</button>
+    </div>
+  </section>
+  <aside class="notes" id="notes" aria-label="重點歸納">
+    <div class="noteshead"><h3>重點歸納</h3><button id="recite" type="button" aria-pressed="false">背誦模式：遮住關鍵字</button></div>
+    <ul id="points"></ul>
+    <div class="rhyme"><span>背誦口訣</span><p id="rhyme"></p></div>
+    <p class="hint" id="hint"></p>
+  </aside>
+</main>
+
+<script id="stages">
+/* ---------- 繪圖小工具（只回傳 SVG 字串，不碰 DOM） ---------- */
+const C={water:'#2b7bd6',nut:'#e08a1e',red:'#d43d3d',blue:'#4a63c9',green:'#1f8f5f',ink:'#17251f',mut:'#56665e',germ:'#8a4fc7',acc:'#1f7a5c'};
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const sg=(t,a,b)=>cl((t-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const n1=n=>(Math.round(n*10)/10);
+const dot=(x,y,r,fill,o=1,ex='')=>`<circle cx="${n1(x)}" cy="${n1(y)}" r="${n1(r)}" fill="${fill}" opacity="${n1(o*100)/100}" ${ex}/>`;
+const T=(x,y,s,o={})=>`<text x="${n1(x)}" y="${n1(y)}" text-anchor="${o.a||'middle'}" font-size="${o.z||17}" font-weight="${o.w||500}" fill="${o.f||C.ink}" opacity="${n1((o.o??1)*100)/100}">${s}</text>`;
+const along=(pts,s)=>{for(let i=1;i<pts.length;i++){const[ax,ay]=pts[i-1],[bx,by]=pts[i],d=Math.hypot(bx-ax,by-ay);if(s<=d||i===pts.length-1){const p=d?cl(s/d):0;return[ax+(bx-ax)*p,ay+(by-ay)*p];}s-=d;}};
+const plen=pts=>pts.slice(1).reduce((a,p,i)=>a+Math.hypot(p[0]-pts[i][0],p[1]-pts[i][1]),0);
+const bundle=(x,y,deg,s,camb,xo=1,po=1)=>`<g transform="translate(${n1(x)} ${n1(y)}) rotate(${n1(deg)}) scale(${n1(s*100)/100})"><ellipse cx="11" cy="0" rx="9" ry="11" fill="${C.nut}" opacity="${po}"/><ellipse cx="-9" cy="0" rx="11" ry="12" fill="${C.water}" opacity="${xo}"/>${camb?`<rect x="-.5" y="-12" width="4" height="24" fill="#2fae6b"/>`:''}</g>`;
+
+const UNITS=['植物的運輸','人體的循環','人體的防禦'];
+const S=[];
+
+/* ---------- 1 維管束 ---------- */
+S.push({unit:0,title:'維管束：植物的兩條運輸管',dur:14,loop:true,
+svg:`<rect x="0" y="330" width="800" height="120" fill="#e6d9bb"/>
+<circle cx="700" cy="66" r="30" fill="#f6c545"/>${T(700,120,'日光',{z:14})}
+<path d="M400 405L330 440M400 405L470 440M400 405L400 446" stroke="#a98d5b" stroke-width="7" stroke-linecap="round"/>
+<rect x="368" y="100" width="64" height="310" rx="8" fill="#cfe6c4" stroke="#7fae78"/>
+<rect x="378" y="104" width="18" height="302" rx="6" fill="#d6e6fb"/><rect x="404" y="104" width="18" height="302" rx="6" fill="#fbe6c6"/>
+<path d="M432 175Q500 110 600 150Q520 215 432 175Z" fill="#8cc97a"/><path d="M368 200Q300 135 200 175Q280 240 368 200Z" fill="#8cc97a"/>
+<circle cx="400" cy="78" r="30" fill="#f3a6b8"/>${T(400,38,'花、果實',{z:14})}
+${T(612,158,'葉：行光合作用，製造養分',{a:'start',z:14})}
+${T(352,278,'木質部',{a:'end',f:C.water,w:700,z:20})}${T(352,302,'水分、礦物質 ↑',{a:'end'})}
+${T(448,278,'韌皮部',{a:'start',f:C.nut,w:700,z:20})}${T(448,302,'養分 ↑↓',{a:'start'})}
+${T(40,400,'根：吸收水分和礦物質',{a:'start',z:14})}`,
+caps:[[0,'維管束是成束排列的運輸細胞，從根、莖一路延伸到葉、花和果實。'],[4,'藍色是木質部：把根吸收的水分和礦物質往上送。'],[9,'橘色是韌皮部：把葉製造的養分送到需要的地方，可以向上，也可以向下。']],
+tick(t){let h='';const p=t/14;
+ for(let i=0;i<6;i++){const ph=(p*3+i/6)%1;h+=dot(387,404-296*ph,6,C.water);}
+ for(let i=0;i<6;i++){const ph=(p*2+i/6)%1,right=i%2===0;const sx=right?520:290,sy=right?165:188,jy=right?178:202;
+  let x,y;if(ph<.25){const q=ph/.25;x=lerp(sx,413,q);y=lerp(sy,jy,q);}else{const q=(ph-.25)/.75;x=413;y=i%4<2?lerp(jy,108,q):lerp(jy,402,q);}
+  h+=dot(x,y,6,C.nut);}
+ return h;},
+points:['植物體內負責運輸的細胞排列成束，稱為<b>維管束</b>，由根、莖延伸到葉、花、果實。','<b>木質部</b>運輸<b>水分和礦物質</b>，方向<b>由下往上</b>；細胞壁較厚，還有<b>支持</b>的功能。','<b>韌皮部</b>運輸光合作用製造的<b>養分</b>，可以<b>向上也可以向下</b>。'],
+rhyme:'木送水、韌送養；水只往上，養分雙向。'});
+
+/* ---------- 2 位置 ---------- */
+S.push({unit:0,title:'木質部和韌皮部在哪裡',dur:12,loop:false,
+svg:`${T(220,60,'莖的橫切面',{w:700,z:20})}<circle cx="220" cy="225" r="130" fill="#dcebd2" stroke="#7fae78" stroke-width="3"/>
+${T(615,100,'葉的橫切面',{w:700,z:20})}<rect x="470" y="150" width="290" height="150" rx="20" fill="#b4dba0"/>
+<rect x="470" y="150" width="290" height="18" rx="9" fill="#7dbb6a"/><rect x="470" y="282" width="290" height="18" rx="9" fill="#7dbb6a"/>
+${T(770,144,'上表皮',{a:'end',z:13,f:C.mut})}${T(770,318,'下表皮',{a:'end',z:13,f:C.mut})}`,
+caps:[[0,'切開莖和葉，找一找木質部（藍）和韌皮部（橘）的位置。'],[2,'木質部：在莖的內側；在葉脈裡靠上面。'],[6,'韌皮部：在莖的外側；在葉脈裡靠下面。'],[10,'記起來：莖是「木內韌外」，葉是「木上韌下」。']],
+tick(t){const xo=(t>=6&&t<10)?.2:1,po=(t>=2&&t<6)?.2:1;let h='';
+ for(let k=0;k<8;k++){const a=k*Math.PI/4;h+=bundle(220+88*Math.cos(a),225+88*Math.sin(a),k*45,1.25,false,xo,po);}
+ h+=`<path d="M570 225A45 38 0 0 1 660 225Z" fill="${C.water}" opacity="${xo}"/><path d="M570 225A45 38 0 0 0 660 225Z" fill="${C.nut}" opacity="${po}"/>`;
+ h+=T(220,392,'木質部在內側',{f:C.water,w:700,o:xo})+T(220,418,'韌皮部在外側',{f:C.nut,w:700,o:po});
+ h+=T(615,345,'木質部在上側（靠近上表皮）',{f:C.water,w:700,o:xo})+T(615,371,'韌皮部在下側（靠近下表皮）',{f:C.nut,w:700,o:po});
+ return h;},
+points:['莖：木質部在<b>內</b>側，韌皮部在<b>外</b>側。','葉脈就是葉內的<b>維管束</b>。','葉：木質部在<b>上</b>側（靠近上表皮），韌皮部在<b>下</b>側（靠近下表皮）。'],
+rhyme:'莖「木內韌外」，葉「木上韌下」。'});
+
+/* ---------- 3 排列 ---------- */
+const SC=[[0,0],[.35,.1],[-.3,.2],[.1,-.4],[-.15,-.25],[.55,-.3],[-.55,-.2],[.2,.5],[-.4,.55],[.7,.25],[-.72,.2],[0,.78],[.3,-.72],[-.35,-.68]];
+S.push({unit:0,title:'莖內維管束的兩種排列',dur:14,loop:false,
+svg:`${T(210,48,'環狀排列',{w:700,z:22})}${T(590,48,'散生排列',{w:700,z:22})}
+${T(210,385,'有形成層，莖可以加粗',{w:700})}${T(210,410,'例：向日葵、榕樹',{z:15})}${T(210,432,'（向日葵的葉脈是網狀脈）',{z:13,f:C.mut})}
+${T(590,385,'通常沒有形成層',{w:700})}${T(590,410,'例：玉米、水稻',{z:15})}${T(590,432,'（玉米的葉脈是平行脈）',{z:13,f:C.mut})}`,
+caps:[[0,'不同植物的莖，維管束排列方式不一樣。'],[1,'環狀排列：維管束圍成一圈，木質部和韌皮部之間有形成層（綠色）。'],[4.5,'散生排列：維管束分散在莖裡，通常沒有形成層。'],[8,'形成層會細胞分裂，向外長新的韌皮部、向內長新的木質部，莖就變粗了。']],
+tick(t){const g=sg(t,8,13),r=105+25*g,lo=(t>=4.5&&t<8)?.3:1,ro=((t>=1&&t<4.5)||t>=8&&t<13)?.3:1;
+ let h=`<g opacity="${lo}"><circle cx="210" cy="205" r="${n1(r)}" fill="#dcebd2" stroke="#7fae78" stroke-width="3"/><circle cx="210" cy="205" r="${n1(r*.64)}" fill="none" stroke="#2fae6b" stroke-width="${n1(2+3*g)}" stroke-dasharray="5 5"/>`;
+ for(let k=0;k<8;k++){const a=k*Math.PI/4;h+=bundle(210+r*.64*Math.cos(a),205+r*.64*Math.sin(a),k*45,1+.45*g,true);}
+ h+=`</g><g opacity="${ro}"><circle cx="590" cy="205" r="105" fill="#dcebd2" stroke="#7fae78" stroke-width="3"/>`;
+ SC.forEach(([dx,dy])=>{h+=bundle(590+dx*105*.95,205+dy*105*.95,Math.atan2(dy,dx)*180/Math.PI,.75,false);});
+ h+='</g>';if(g>0)h+=T(210,210,'加粗',{w:700,z:20,f:C.acc,o:g});return h;},
+points:['<b>環狀</b>排列：例如向日葵、榕樹；木質部與韌皮部之間有<b>形成層</b>。','<b>散生</b>排列：例如玉米、水稻；通常<b>不具</b>形成層。','形成層可細胞分裂：向<b>外</b>增生韌皮部，向<b>內</b>增生木質部，使莖<b>加粗</b>。'],
+rhyme:'環狀有層能加粗，散生無層不加粗。'});
+
+/* ---------- 4 年輪 ---------- */
+S.push({unit:0,title:'樹皮與年輪',dur:17,loop:false,
+svg:`${T(270,432,'外圈是樹皮（含韌皮部）；裡面的木材由木質部逐年堆積而成',{z:14,f:C.mut})}`,
+caps:[[0,'樹木每年都向外長出新的木質部，堆積成木材。'],[0.5,'春夏溫暖多雨，細胞長得快又大，木材顏色淺。'],[2.6,'秋冬寒冷乾燥，細胞長得慢又小，木材顏色深。'],[4,'一圈淺色加一圈深色，就是一年的年輪。繼續看它長大。'],[16,'數一數：四圈深色，這棵樹 4 歲。']],
+tick(t){const yrs=Math.min(4,t/4),bands=[];let r=14;
+ for(let y=0;y<4;y++){const q=cl(yrs-y);if(q<=0)break;const a=cl(q/.65),b=cl((q-.65)/.35);r+=24*a;bands.push([r,'#ecd9ae']);if(b>0){r+=8*b;bands.push([r,'#9a6b3a']);}}
+ let h=`<circle cx="270" cy="220" r="${n1(r+5)}" fill="#6b4a2b"/>`;
+ for(let i=bands.length-1;i>=0;i--)h+=dot(270,220,bands[i][0],bands[i][1]);
+ h+=dot(270,220,14,'#c9a877');
+ const done=t>=16,q=(t/4)%1,spring=!done&&q<.65;
+ h+=T(620,80,done?'樹齡：4 年':`第 ${Math.min(4,Math.floor(t/4)+1)} 年`,{w:700,z:26});
+ const card=(y,on,ti,l1,fill)=>`<g opacity="${on?1:.4}"><rect x="470" y="${y}" width="300" height="96" rx="14" fill="${fill}" stroke="${on?C.acc:'#d3dcd1'}" stroke-width="${on?4:1}"/>${T(620,y+34,ti,{w:700,z:19})}${T(620,y+66,l1,{z:15})}</g>`;
+ h+=card(110,done||spring,'春、夏：溫暖多雨','生長快・細胞大・顏色淺','#f6ecd2')+card(226,done||!spring,'秋、冬：寒冷乾燥','生長慢・細胞小・顏色深','#e2cdb0');
+ return h;},
+points:['樹皮包含<b>韌皮部</b>及其外圍構造；木材是逐年堆積的<b>木質部</b>。','春夏：細胞生長<b>快</b>、細胞<b>大</b>、木材顏色<b>淺</b>。','秋冬：細胞生長<b>慢</b>、細胞<b>小</b>、木材顏色<b>深</b>。','深淺交替形成<b>年輪</b>，可以用來推算樹齡。'],
+rhyme:'春夏大而淺，秋冬小而深；一淺一深算一年。'});
+
+/* ---------- 5 蒸散 ---------- */
+const WP=[[50,395],[150,395],[176,380],[176,150],[215,128],[300,112],[332,62],[322,22]],WL=plen(WP);
+S.push({unit:0,title:'水分運輸與蒸散作用',dur:14,loop:true,
+svg:`<rect x="0" y="345" width="410" height="105" fill="#e6d9bb"/>
+<path d="M166 372L118 392M166 388L112 412M186 376L232 396M186 392L238 416" stroke="#a98d5b" stroke-width="4" stroke-linecap="round"/>
+<rect x="162" y="140" width="28" height="270" rx="6" fill="#cfe6c4" stroke="#7fae78"/><rect x="169" y="144" width="14" height="262" rx="5" fill="#d6e6fb"/>
+<path d="M188 150Q240 78 345 104Q285 162 188 150Z" fill="#8cc97a"/>
+${T(20,436,'根毛：增加吸收的表面積',{a:'start',z:14})}${T(20,372,'滲透作用',{a:'start',z:14,f:C.water,w:700})}
+${T(154,262,'木質部',{a:'end',z:15,f:C.water,w:700})}${T(350,60,'水蒸氣',{a:'start',z:14,f:C.water})}${T(268,186,'葉的氣孔',{z:14})}`,
+caps:[[0,'水分靠滲透作用進入根毛，沿著木質部往上送。'],[3,'白天氣孔張開，水變成水蒸氣散失，這就是蒸散作用，會把木質部裡的水往上拉。'],[7,'晚上（或白天太乾、缺水）保衛細胞失水，氣孔關閉，蒸散減弱。'],[11,'蒸散作用是水分向上運輸的主要動力。']],
+tick(t){const day=t<7,o=day?sg(t,.6,2.6):1-sg(t,7.6,9.6);let h='';
+ for(let i=0;i<9;i++){const ph=(t/14*2+i/9)%1,[x,y]=along(WP,ph*WL),vap=ph>.82;h+=dot(x,y,vap?4:6,vap?'#8fc0f2':C.water,(vap?(1-(ph-.82)/.18):1)*(.3+.7*o));}
+ h+=`<rect x="430" y="40" width="345" height="370" rx="16" fill="${day?'#fffbe6':'#e8ecf7'}" stroke="#d3dcd1"/>`+T(602,76,'氣孔放大圖',{w:700,z:18})+dot(742,72,15,day?'#f6c545':'#9aa7d6')+T(742,104,day?'白天':'晚上',{z:13});
+ const b=62*o,cx=602;
+ h+=`<path d="M${cx-17} 135Q${n1(cx-17-b)} 205 ${cx-17} 275" stroke="#4fa35a" stroke-width="30" stroke-linecap="round" fill="none"/><path d="M${cx+17} 135Q${n1(cx+17+b)} 205 ${cx+17} 275" stroke="#4fa35a" stroke-width="30" stroke-linecap="round" fill="none"/>`;
+ for(let i=0;i<4;i++){const ph=(t/14*6+i/4)%1;h+=dot(cx+(i%2?7:-7),250-110*ph,4,'#8fc0f2',o*(1-ph*.6));}
+ h+=T(cx-112,210,'保衛細胞',{z:13,f:C.mut})+T(cx+112,210,'保衛細胞',{z:13,f:C.mut});
+ h+=T(cx,330,day?'保衛細胞吸水膨脹、彎曲':'保衛細胞水分移出',{z:16})+T(cx,360,day?'氣孔張開，蒸散旺盛':'氣孔關閉，減少水分散失',{w:700,z:19,f:day?C.acc:C.blue});
+ h+=T(cx,392,'乾燥缺水時，白天也會關閉',{z:13,f:C.mut});return h;},
+points:['根部表皮細胞向外突出形成<b>根毛</b>，可增加<b>吸收表面積</b>；水分藉<b>滲透作用</b>進入根部。','水分和礦物質由<b>木質部</b>往上運輸。','水變成水蒸氣由<b>氣孔</b>散失，稱為<b>蒸散作用</b>，是水分上升的<b>主要動力</b>。','氣孔由兩個<b>保衛細胞</b>控制：吸水膨脹時<b>張開</b>，水分移出時<b>關閉</b>。','氣孔通常<b>白天</b>張開、晚上關閉；乾燥缺水時白天也會關閉。'],
+rhyme:'根毛吸、木質送、氣孔散；保衛細胞「吸水開、失水關」。'});
+
+/* ---------- 6 心臟 ---------- */
+S.push({unit:1,title:'心臟的構造與心搏',dur:12,loop:true,
+svg:`${T(400,84,'圖的左邊是身體的右邊（像面對面看別人）',{z:13,f:C.mut})}
+${T(132,166,'上、下大靜脈',{a:'end'})}${T(132,188,'（全身回來的缺氧血）',{a:'end',z:12,f:C.mut})}
+${T(132,286,'肺動脈',{a:'end'})}${T(132,308,'（把血送往肺）',{a:'end',z:12,f:C.mut})}
+${T(668,166,'肺靜脈',{a:'start'})}${T(668,188,'（肺回來的充氧血）',{a:'start',z:12,f:C.mut})}
+${T(668,286,'主動脈',{a:'start'})}${T(668,308,'（把血送往全身）',{a:'start',z:12,f:C.mut})}`,
+caps:[[0,'心臟由心肌構成，有四個腔室：上面是心房，下面是心室。'],[3,'心臟收縮：血液被擠進動脈。心房和心室之間的瓣膜關起來，血不會倒流。'],[6,'心臟舒張：靜脈的血液流回心臟。心室和動脈之間的瓣膜關起來。'],[9,'一縮一舒就是一次心搏，它是血液流動的主要動力。']],
+tick(t){const ph=(t/3)%1,sys=ph<.5,k=sys?Math.sin(Math.PI*ph*2):0,d=9*k;let h='';
+ h+=T(400,52,sys?'心臟收縮 → 血液流入動脈':'心臟舒張 → 血液由靜脈流回心臟',{w:700,z:24,f:sys?C.red:C.blue});
+ const ch=(x,y,w,hh,fill,s,name,ins)=>`<rect x="${n1(x+ins)}" y="${n1(y+ins)}" width="${n1(w-2*ins)}" height="${n1(hh-2*ins)}" rx="16" fill="${fill}" stroke="${s}" stroke-width="3"/>`+T(x+w/2,y+hh/2+6,name,{w:700});
+ h+=ch(270,125,115,85,'#dfe5fb','#4a63c9','右心房',0)+ch(415,125,115,85,'#fbe0dd','#d43d3d','左心房',0)+ch(270,222,115,118,'#c9d3f7','#4a63c9','右心室',d)+ch(415,222,115,118,'#f7c9c4','#d43d3d','左心室',d);
+ const io=sys?.25:1,oo=sys?1:.25,ln=(x1,x2,y,c,m,o)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="5" marker-end="url(#${m})" opacity="${o}"/>`;
+ h+=ln(142,258,170,C.blue,'ahB',io)+ln(658,542,170,C.red,'ahR',io)+ln(258,142,290,C.blue,'ahB',oo)+ln(542,658,290,C.red,'ahR',oo);
+ const v=(pts)=>`<path d="${pts}" stroke="${C.ink}" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+ [270,415].forEach(x=>{h+=sys?v(`M${x+25} 216H${x+90}`):v(`M${x+25} 213L${x+47} 236M${x+90} 213L${x+68} 236`);});
+ h+=sys?v('M268 270L250 281M268 310L250 299')+v('M532 270L550 281M532 310L550 299'):v('M268 270V310')+v('M532 270V310');
+ for(let i=0;i<3;i++){if(sys){const q=cl(ph/.5*1.3-i*.15);if(q>0&&q<1){h+=dot(lerp(262,146,q),290,7,C.blue)+dot(lerp(538,654,q),290,7,C.red);}}
+  else{const q=cl((ph-.5)/.5*1.3-i*.15);if(q>0&&q<1){const a=cl(q/.55),b=cl((q-.55)/.45);h+=dot(lerp(146,327,a),lerp(170,285,b),7,C.blue)+dot(lerp(654,473,a),lerp(170,285,b),7,C.red);}}}
+ h+=T(400,385,sys?'房室之間的瓣膜關閉，血液不會逆流回心房':'心室與動脈之間的瓣膜關閉，血液不會逆流回心室',{z:16});
+ h+=T(400,420,sys?'撲':'通',{w:700,z:22,f:C.mut});return h;},
+points:['心臟位於胸腔中央偏<b>左</b>，由<b>心肌</b>構成。','分為四個腔室：上方是左、右<b>心房</b>，下方是左、右<b>心室</b>。','心臟內的<b>瓣膜</b>可防止血液<b>逆流</b>。','心臟<b>收縮</b>時血液流入<b>動脈</b>；<b>舒張</b>時<b>靜脈</b>的血液流回心臟。','規律的<b>心搏</b>是血液流動的主要動力；每分鐘的心搏次數和<b>脈搏</b>次數相同。'],
+rhyme:'上房下室；心房接靜脈收血，心室接動脈送血。'});
+
+/* ---------- 7 血管 ---------- */
+const capY=(x,off)=>150+off*Math.sin(Math.PI*(x-270)/260);
+const capLine=off=>{let d='';for(let x=270;x<=530;x+=10)d+=(x===270?'M':'L')+x+' '+n1(capY(x,off));return `<path d="${d}" stroke="url(#gcap)" stroke-width="11" fill="none" stroke-linecap="round"/>`;};
+S.push({unit:1,title:'三種血管：動脈、微血管、靜脈',dur:14,loop:true,
+svg:`<rect x="20" y="108" width="252" height="84" rx="6" fill="#b5332b"/><rect x="20" y="122" width="254" height="56" fill="#f3a39b"/>
+<rect x="528" y="100" width="252" height="100" rx="6" fill="#4a5aa8"/><rect x="526" y="106" width="254" height="88" fill="#b9c3ee"/>
+${capLine(-42)}${capLine(0)}${capLine(42)}
+<path d="M655 106L690 140M655 194L690 160" stroke="#4a5aa8" stroke-width="5" stroke-linecap="round"/>
+${[0,1,2,3,4].map(k=>`<rect x="${290+k*46}" y="258" width="40" height="34" rx="9" fill="#f7e3c4" stroke="#d9b98a"/>`).join('')}${T(400,314,'組織細胞',{z:14})}
+${T(145,36,'動脈',{w:700,z:22,f:C.red})}${T(145,60,'管壁最厚、彈性最好',{z:14})}${T(145,82,'血壓最高，把血液帶離心臟',{z:14})}
+${T(400,36,'微血管',{w:700,z:22,f:C.germ})}${T(400,60,'管壁只有一層細胞',{z:14})}${T(400,82,'流速最慢，進行物質交換',{z:14})}
+${T(655,36,'靜脈',{w:700,z:22,f:C.blue})}${T(655,60,'管腔最大、血壓最低',{z:14})}${T(655,82,'有瓣膜，把血液帶回心臟',{z:14})}
+${T(24,224,'從心臟來 →',{a:'start',z:14,f:C.mut})}${T(776,224,'→ 流回心臟',{a:'end',z:14,f:C.mut})}
+${T(282,240,'氧氣、養分 ↓',{a:'end',z:14,f:C.red})}${T(518,240,'↑ 二氧化碳、廢物',{a:'start',z:14,f:C.blue})}
+${T(400,362,'管壁厚度：動脈 ＞ 靜脈 ＞ 微血管')}${T(400,390,'管腔大小：靜脈 ＞ 動脈 ＞ 微血管')}${T(400,418,'血壓高低：動脈 ＞ 微血管 ＞ 靜脈')}`,
+caps:[[0,'血液從心臟出發，依序流過動脈、微血管、靜脈，再回到心臟。'],[3,'注意速度：動脈流得快，到了微血管變得最慢，才有時間和細胞交換物質。'],[8,'微血管的管壁只有一層細胞，氧氣和養分送給細胞，二氧化碳和廢物回到血液。'],[11,'靜脈管腔大、血壓低，靠瓣膜防止血液逆流。']],
+tick(t){let h='';
+ for(let i=0;i<12;i++){const ph=(t/14+i/12)%1,lane=i%3-1;let x,y;
+  if(ph<.16){x=20+250*ph/.16;y=150+lane*16*(1-sg(x,225,270));}
+  else if(ph<.72){x=270+260*(ph-.16)/.56;y=capY(x,lane*42);}
+  else{x=530+250*(ph-.72)/.28;y=150+lane*26*sg(x,530,575);}
+  h+=dot(x,y,7,x<400?C.red:C.blue,1,'stroke="#fff" stroke-width="1.5"');}
+ for(let k=0;k<4;k++){const q=(t/14*5+k/4)%1;h+=dot(312+k*46,200+52*q,4,C.red,1-q*.5)+dot(335+k*46,252-52*q,4,C.blue,1-q*.5);}
+ return h;},
+points:['<b>動脈</b>：把血液<b>帶離</b>心臟；管壁<b>最厚</b>、最有彈性，血壓<b>最高</b>。','<b>微血管</b>：管壁只有<b>一層細胞</b>，流速<b>最慢</b>，是血液和組織細胞<b>交換物質</b>的地方。','<b>靜脈</b>：把血液<b>帶回</b>心臟；管腔<b>最大</b>，血壓<b>最低</b>，有些有<b>瓣膜</b>防止逆流。','管壁厚度：<b>動脈 ＞ 靜脈 ＞ 微血管</b>。','管腔大小：<b>靜脈 ＞ 動脈 ＞ 微血管</b>。','血壓：<b>動脈 ＞ 微血管 ＞ 靜脈</b>。'],
+rhyme:'動脈離心、靜脈回心、微血管交換。'});
+
+/* ---------- 8 血球 ---------- */
+S.push({unit:1,title:'血液的組成：三種血球',dur:16,loop:false,
+svg:`${[15,280,545].map(x=>`<rect x="${x}" y="24" width="240" height="296" rx="16" fill="#fff" stroke="#d3dcd1"/>`).join('')}
+${T(135,352,'紅血球',{w:700,z:22,f:C.red})}${T(135,378,'數量最多・沒有細胞核',{z:14})}${T(135,400,'雙凹圓盤狀，含血紅素',{z:14})}${T(135,424,'功能：攜帶氧氣',{z:15,w:700})}
+${T(400,352,'白血球',{w:700,z:22,f:C.germ})}${T(400,378,'體積最大・數量最少',{z:14})}${T(400,400,'有細胞核',{z:14})}${T(400,424,'功能：吞噬病原體、產生抗體',{z:15,w:700})}
+${T(665,352,'血小板',{w:700,z:22,f:'#a87400'})}${T(665,378,'體積最小・沒有細胞核',{z:14})}${T(665,400,'形狀不規則',{z:14})}${T(665,424,'功能：促使血液凝固',{z:15,w:700})}`,
+caps:[[0,'血液由血漿和血球組成。血球有三種，各有任務。'],[1,'紅血球含有血紅素，能和氧氣結合，負責攜帶氧氣。'],[5,'白血球會改變形狀，吞噬入侵的病原體；有些還能產生抗體。'],[10,'受傷流血時，血小板聚集到傷口，促使血液凝固，避免失血過多。'],[15,'只有白血球有細胞核。']],
+tick(t){const act=t<.01||t>=15?-1:t<5?0:t<10?1:2,op=i=>act<0||act===i?1:.35;let h='';
+ const a=sg(t,1,2.6),rx=lerp(110,160,sg(t,2.6,5));
+ h+=`<g opacity="${op(0)}">`+dot(rx,180,48,'#e24a4a')+dot(rx,180,21,'#c93636');
+ [[-28,-24],[28,-24],[-28,24],[28,24]].forEach(([ox,oy],i)=>{h+=dot(lerp(70+i*42,rx+ox,a),lerp(64,180+oy,a),9,'#7cc4f5',1,'stroke="#2b7bd6" stroke-width="2"');});
+ h+=T(135,300,'藍色小球代表氧氣',{z:13,f:C.mut})+'</g>';
+ const wx=lerp(360,418,sg(t,6,8.4)),gr=15*(1-sg(t,8.4,9.6));
+ h+=`<g opacity="${op(1)}">`+(gr>.5?dot(462,180,gr,'#5aa84f',1,'stroke="#2f6e2a" stroke-width="3" stroke-dasharray="3 3"'):'')+dot(wx,180,52,'#ece6fa',.92,'stroke="#b9a8e6" stroke-width="3"')+`<ellipse cx="${n1(wx-10)}" cy="174" rx="24" ry="17" fill="#8c74d4"/>`+T(400,70,t>=9?'吞噬完成':'病原體 →',{z:14,f:C.mut})+T(400,300,'紫色是細胞核',{z:13,f:C.mut})+'</g>';
+ const p=sg(t,11,14);
+ h+=`<g opacity="${op(2)}"><path d="M560 215H643M687 215H770" stroke="#d98a8a" stroke-width="16" stroke-linecap="round"/>`+T(665,70,p>=1?'傷口堵住了':'血管破了',{z:14,f:C.mut});
+ for(let i=0;i<3;i++){const q=(t*.8+i/3)%1;h+=dot(655+i*10,224+50*q,5,C.red,(1-p)*(1-q));}
+ [[580,100],[620,150],[700,110],[745,160],[600,180],[735,120],[665,130]].forEach(([sx,sy],i)=>{const tx=650+(i%4)*10,ty=208+(i%2)*10;h+=`<ellipse cx="${n1(lerp(sx,tx,p))}" cy="${n1(lerp(sy,ty,p))}" rx="10" ry="6" fill="#f0c04a" stroke="#a87400" transform="rotate(${i*40} ${n1(lerp(sx,tx,p))} ${n1(lerp(sy,ty,p))})"/>`;});
+ h+='</g>';return h;},
+points:['血液由<b>血漿</b>和<b>血球</b>組成；血漿主要成分是<b>水</b>，溶有養分、激素和廢物。','<b>紅血球</b>：數量<b>最多</b>、<b>沒有</b>細胞核、雙凹圓盤狀；含<b>血紅素</b>，負責攜帶<b>氧氣</b>。','<b>白血球</b>：體積<b>最大</b>、數量<b>最少</b>、<b>有</b>細胞核；可吞噬病原體，有些會產生<b>抗體</b>。','<b>血小板</b>：體積<b>最小</b>、沒有細胞核、形狀不規則；促使血液<b>凝固</b>。','數量：<b>紅血球 ＞ 血小板 ＞ 白血球</b>；體積：<b>白血球 ＞ 紅血球 ＞ 血小板</b>。'],
+rhyme:'紅運氧、白防禦、板凝血；只有白血球有核。'});
+
+/* ---------- 9 血液循環 ---------- */
+const BP=[[500,60],[580,60],[580,205],[470,205],[470,370],[470,400],[300,400],[180,400],[180,205],[330,205],[330,262],[400,262],[400,90],[400,60],[500,60]],BL=plen(BP);
+const BLAB=[[392,515,267,'start','❶ 左心室'],[450,484,330,'start','❷ 主動脈'],[600,512,405,'start','❸ 全身組織微血管'],[920,170,310,'end','❹ 大靜脈'],[1165,288,190,'end','❺ 右心房'],[1222,288,267,'end','❻ 右心室'],[1382,392,150,'end','❼ 肺動脈'],[1544,290,65,'end','❽ 肺部微血管'],[150,592,135,'start','❾ 肺靜脈'],[335,512,190,'start','❿ 左心房']];
+S.push({unit:1,title:'血液循環：體循環與肺循環',dur:16,loop:true,
+svg:`<rect x="300" y="30" width="200" height="60" rx="14" fill="#e6f1fb" stroke="#b9cfe6"/><rect x="300" y="370" width="200" height="60" rx="14" fill="#f7ecd6" stroke="#d9c49a"/>
+${T(400,20,'肺：氧氣進入血液，二氧化碳排出',{z:13,f:C.mut})}${T(400,446,'全身組織：氧氣給細胞，二氧化碳進入血液',{z:13,f:C.mut})}
+<rect x="295" y="180" width="70" height="50" rx="10" fill="#dfe5fb" stroke="#4a63c9"/><rect x="295" y="237" width="70" height="53" rx="10" fill="#dfe5fb" stroke="#4a63c9"/>
+<rect x="435" y="180" width="70" height="50" rx="10" fill="#fbe0dd" stroke="#d43d3d"/><rect x="435" y="237" width="70" height="53" rx="10" fill="#fbe0dd" stroke="#d43d3d"/>
+<path d="M450 60H580V205H470V400H400" stroke="#f3a39b" stroke-width="14" fill="none" stroke-linejoin="round"/>
+<path d="M400 400H180V205H330V262H400V60H450" stroke="#b9c3ee" stroke-width="14" fill="none" stroke-linejoin="round"/>
+${dot(28,414,7,C.red)}${T(42,419,'充氧血（氧氣多）',{a:'start',z:13})}${dot(28,436,7,C.blue)}${T(42,441,'缺氧血（二氧化碳多）',{a:'start',z:13})}
+${T(20,36,'圖的左邊是身體的右邊',{a:'start',z:12,f:C.mut})}`,
+caps:[[0,'體循環：左心室把充氧血送進主動脈，流到全身組織的微血管。'],[4,'在組織微血管，氧氣給細胞、二氧化碳進血液，變成缺氧血，經大靜脈回到右心房。'],[7.8,'肺循環：右心室把缺氧血送進肺動脈，流到肺部微血管。'],[12,'在肺換氣後變回充氧血，經肺靜脈回到左心房，再進左心室，開始下一圈。']],
+tick(t){const q=(t/16)%1,lead=(392+q*BL)%BL,sysc=q<.5;let h='';
+ for(let i=0;i<14;i++){const s=(lead+i*BL/14)%BL,[x,y]=along(BP,s),red=s<600||s>1544;h+=dot(x,y,i===0?10:6,red?C.red:C.blue,i===0?1:.75,i===0?'stroke="#17251f" stroke-width="3"':'');}
+ BLAB.forEach(([s,x,y,a,name])=>{let d=Math.abs(lead-s);d=Math.min(d,BL-d);const on=d<50;h+=T(x,y,name,{a,z:on?16:14,w:on?700:500,f:on?C.ink:C.mut});});
+ h+=T(680,296,sysc?'體循環':'肺循環',{w:700,z:26,f:sysc?C.red:C.blue})+T(680,322,sysc?'左心室 → 全身 → 右心房':'右心室 → 肺 → 左心房',{z:14});
+ return h;},
+points:['體循環：<b>左心室</b> → 主動脈 → 小動脈 → <b>全身組織微血管</b> → 小靜脈 → 上、下大靜脈 → <b>右心房</b>。','肺循環：<b>右心室</b> → 肺動脈 → <b>肺部微血管</b> → 肺靜脈 → <b>左心房</b>。','在組織：氧氣擴散到細胞，二氧化碳擴散到血液，血液變成<b>缺氧血</b>。','在肺部：二氧化碳擴散到肺泡，氧氣擴散到血液，血液變回<b>充氧血</b>。','兩個循環<b>同時</b>進行，在<b>心臟</b>交會。','容易考：肺動脈流的是<b>缺氧血</b>，肺靜脈流的是<b>充氧血</b>。'],
+rhyme:'都是「心室出發、心房回來」：體循環左出右回，肺循環右出左回。'});
+
+/* ---------- 10 淋巴 ---------- */
+S.push({unit:1,title:'淋巴系統：淋巴怎麼形成',dur:15,loop:true,
+svg:`<rect x="40" y="75" width="480" height="30" rx="15" fill="url(#gcap2)"/><rect x="505" y="70" width="275" height="40" rx="8" fill="#b9c3ee"/>
+${T(46,60,'微血管',{a:'start',z:14})}${T(776,60,'靜脈 → 流回心臟',{a:'end',z:14})}
+${[0,1,2,3,4,5].map(k=>`<circle cx="${130+55*k}" cy="185" r="22" fill="#f7e3c4" stroke="#d9b98a"/>`).join('')}${T(440,190,'組織細胞',{a:'start',z:14})}
+<path d="M150 290H640V112" stroke="#a6dcc0" stroke-width="24" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="540" cy="290" rx="52" ry="36" fill="#5fb98a"/>${T(540,296,'淋巴結',{w:700,z:15,f:'#fff'})}${T(540,348,'過濾病原體，裡面有白血球',{z:13})}${T(150,326,'淋巴管',{a:'start',z:14})}
+${T(205,392,'滲出微血管',{z:12,f:C.mut})}${T(395,392,'滲入淋巴管',{z:12,f:C.mut})}${T(585,392,'注入靜脈',{z:12,f:C.mut})}
+<path d="M168 417H238M358 417H428M548 417H618" stroke="#56665e" stroke-width="3" marker-end="url(#ahK)"/>`,
+caps:[[0,'血液流過微血管時，血漿裡的一部分物質會滲到細胞之間，這時叫做組織液。'],[5,'組織液滲入淋巴管後，改名叫淋巴。'],[9,'淋巴流經淋巴結時，病原體被過濾下來，由白血球處理。'],[12,'最後淋巴注入靜脈，回到血液循環。']],
+tick(t){let h='';const col=['#e9b82a','#35a7bd',C.green];
+ for(let i=0;i<10;i++){const ph=(t/15+i/10)%1,x0=157.5+55*(i%5);let x,y,c=col[2],o=1;
+  if(ph<.15){x=lerp(45,x0,ph/.15);y=90;c=col[0];}
+  else if(ph<.4){const q=(ph-.15)/.25;x=x0+6*Math.sin(q*9);y=lerp(90,290,q);c=y<112?col[0]:y<272?col[1]:col[2];}
+  else if(ph<.75){x=lerp(x0,640,(ph-.4)/.35);y=290;}
+  else if(ph<.88){x=640;y=lerp(290,90,(ph-.75)/.13);}
+  else{x=lerp(640,775,(ph-.88)/.12);y=90;o=1-(ph-.88)/.12*.7;}
+  h+=dot(x,y,i===0?8:6,c,o,i===0?'stroke="#17251f" stroke-width="2.5"':'stroke="#fff" stroke-width="1"');}
+ const g=(t/15)%1;if(g>.3&&g<.76)h+=dot(lerp(220,540,sg(g,.3,.62)),278,7*(1-sg(g,.66,.76)),C.germ)+(g>.6?T(540,244,'病原體被攔下',{z:13,f:C.germ}):'');
+ const ph=(t/15)%1,on=ph<.17?0:ph<.4?1:ph<.88?2:3;
+ ['血漿','組織液','淋巴','回到血液'].forEach((n,k)=>{const x=50+190*k,a=on===k;h+=`<rect x="${x}" y="400" width="114" height="34" rx="17" fill="${a?[col[0],col[1],C.green,C.blue][k]:'#fff'}" stroke="${a?C.ink:'#d3dcd1'}" stroke-width="2"/>`+T(x+57,423,n,{w:700,z:16,f:a?'#fff':C.ink});});
+ return h;},
+points:['淋巴系統包含淋巴器官（例如<b>淋巴結</b>）、<b>淋巴管</b>和<b>淋巴</b>。','<b>血漿</b>的部分物質從微血管滲出 → <b>組織液</b> → 滲入淋巴管 → <b>淋巴</b> → 注入<b>靜脈</b>。','淋巴流經<b>淋巴結</b>時，病原體和異物被<b>過濾</b>，並引發<b>白血球</b>作用。','功能：維持血液組成的<b>恆定</b>，並參與人體的<b>防禦</b>。','身體受感染時，附近的淋巴結常因白血球聚集而<b>腫脹</b>（例如扁桃腺發炎）。'],
+rhyme:'同一種液體三個名字：在血管叫血漿，到細胞間叫組織液，進淋巴管叫淋巴。'});
+
+/* ---------- 11 三道防禦 ---------- */
+S.push({unit:2,title:'人體的三道防禦',dur:18,loop:false,
+svg:`${T(120,34,'① 皮膜的阻隔',{w:700,z:18})}${T(370,34,'② 吞噬作用與發炎反應',{w:700,z:18})}${T(650,34,'③ 專一性防禦',{w:700,z:18})}
+<path d="M500 52V408" stroke="#d3dcd1" stroke-width="2" stroke-dasharray="6 6"/>
+${T(245,424,'皮膚、黏膜',{z:13,f:C.mut})}${T(118,444,'體外',{z:13,f:C.mut})}
+${T(385,444,'①② 是非專一性防禦：不針對特定病原體',{z:14})}${T(650,444,'③ 有專一性和記憶性',{z:14})}`,
+caps:[[0,'紫色的病原體想進入身體。第一道防禦：完好的皮膚和黏膜把它們擋在外面。'],[4,'皮膚有了傷口，病原體趁機進入組織。'],[7,'第二道防禦：傷口紅、熱、腫、痛，這是發炎反應，讓白血球大量聚集並吞噬病原體。'],[12,'第三道防禦：特殊的白血球產生抗體，專門對付這一種病原體，讓它失去感染力。'],[16.5,'身體還會記住這種病原體，下次反應更快。']],
+tick(t){let h='';const gap=27*sg(t,3.4,4.2);
+ h+=`<rect x="230" y="52" width="30" height="${n1(173-gap)}" rx="6" fill="#f0bf9a" stroke="#c98a5e"/><rect x="230" y="${n1(225+gap)}" width="30" height="${n1(173-gap)}" rx="6" fill="#f0bf9a" stroke="#c98a5e"/>`;
+ const germ=(x,y,r=14,c=C.germ)=>r>.5?dot(x,y,r,c,1,'stroke="#fff" stroke-width="2" stroke-dasharray="4 3"'):'';
+ const bx=k=>60+140*Math.abs(Math.sin(Math.PI*(t*.45+k*.23)));
+ [95,160,290,355].forEach((y,k)=>{h+=germ(bx(k),y);});
+ const infl=sg(t,6.3,7.2);if(infl>0){h+=dot(325,225,82,C.red,.16*infl*(.75+.25*Math.sin(t*4)))+T(330,128,'紅、熱、腫、痛',{w:700,z:18,f:C.red,o:infl});}
+ const g1x=lerp(bx(4),340,sg(t,4,6.5)),g1r=14*(1-sg(t,9.4,10.6));h+=germ(g1x,225,g1r);
+ let g2x,g2y;if(t<5){g2x=bx(5);g2y=200;}else if(t<6.8){const q=sg(t,5,6.8);g2x=lerp(bx(5),215,q);g2y=lerp(200,232,q);}else if(t<9){const q=sg(t,6.8,9);g2x=lerp(215,380,q);g2y=lerp(232,290,q);}else{const q=sg(t,9,12);g2x=lerp(380,585,q);g2y=lerp(290,225,q);}
+ if(t>=7){const q=sg(t,7.4,9.4);h+=dot(lerp(440,352,q),lerp(345,228,q),30,'#ece6fa',.95,'stroke="#b9a8e6" stroke-width="3"')+dot(lerp(440,352,q)-6,lerp(345,228,q)-4,12,'#8c74d4')+T(440,392,'白血球',{z:13,f:C.mut});}
+ const dead=t>=15.2;h+=germ(g2x,g2y,14,dead?'#9aa39d':C.germ);
+ if(t>=11.5){h+=dot(715,225,34,'#dbeafe',1,'stroke="#4a63c9" stroke-width="3"')+dot(709,220,13,'#6f86de')+T(715,284,'產生抗體的白血球',{z:13,f:C.mut});
+  for(let i=0;i<5;i++){const q=sg(t,12.4+i*.35,14.6+i*.2),ang=i*1.256;h+=T(lerp(680,585+24*Math.cos(ang),q),lerp(230,231+24*Math.sin(ang),q),'Y',{w:700,z:18,f:C.blue,o:sg(t,12.3+i*.35,12.6+i*.35)});}
+  if(t>12.6&&t<15)h+=T(640,170,'抗體',{z:14,f:C.blue});
+  if(dead)h+=T(585,172,'失去感染力',{w:700,z:16,f:C.acc});}
+ return h;},
+points:['會讓生物體生病的微生物（如某些病毒、細菌）稱為<b>病原體</b>。','第一道：<b>皮膜的阻隔</b>。皮膚和<b>黏膜</b>阻擋病原體；消化器官分泌的酵素或鹽酸也能破壞病原體。','第二道：<b>吞噬作用</b>與<b>發炎反應</b>。白血球吞噬病原體；受傷部位出現<b>紅、熱、腫、痛</b>。','第一、二道屬於<b>非專一性</b>防禦，不針對特定病原體。','第三道：<b>專一性</b>防禦。有的白血球破壞<b>被感染的細胞</b>，有的產生<b>抗體</b>，使病原體失去感染力。'],
+rhyme:'一擋（皮膜）、二吞（發炎：紅熱腫痛）、三專一（抗體加記憶）。'});
+
+/* ---------- 12 疫苗 ---------- */
+const VF=x=>70*Math.exp(-(((x-310)/55)**2))+(x>485?250*(1-Math.exp(-(x-485)/25))*Math.exp(-(x-485)/700):0);
+S.push({unit:2,title:'疫苗的原理：記憶性',dur:14,loop:false,
+svg:`<path d="M90 60V380H770" stroke="${C.ink}" stroke-width="3" fill="none" marker-end="url(#ahK)"/>
+<text x="46" y="225" text-anchor="middle" font-size="15" transform="rotate(-90 46 225)" fill="${C.ink}">防禦作用的強度</text>${T(430,424,'時間',{z:15})}
+<path d="M170 78V380M470 78V380" stroke="#56665e" stroke-width="2" stroke-dasharray="6 5"/>
+${T(170,48,'注射疫苗',{w:700})}${T(170,70,'第一次接觸',{z:13,f:C.mut})}${T(470,48,'病原體入侵',{w:700})}${T(470,70,'再遇到相同的病原體',{z:13,f:C.mut})}`,
+caps:[[0,'這張圖畫的是防禦作用的強度隨時間的變化。'],[1.5,'注射疫苗後，身體第一次認識這種病原體：反應來得慢，強度也比較弱。'],[7,'但是身體記住它了，這就是專一性防禦的記憶性。'],[8.5,'之後真的被相同的病原體入侵，特定的白血球大量增生：反應快、強度更強。']],
+tick(t){const xm=90+680*sg(t,1,13);let d='M90 376';for(let x=92;x<=xm;x+=4)d+='L'+x+' '+n1(376-VF(x));
+ let h=`<path d="${d}" stroke="${C.acc}" stroke-width="5" fill="none" stroke-linejoin="round"/>`;
+ if(xm>92)h+=dot(xm,376-VF(xm),7,C.acc);
+ h+=T(310,268,'第一次防禦反應',{z:14,o:sg(t,5,5.6)})+T(310,290,'反應慢、強度較弱',{w:700,o:sg(t,5,5.6)});
+ h+=T(392,200,'身體有記憶性',{w:700,z:16,f:C.germ,o:sg(t,7,7.6)});
+ h+=T(655,96,'第二次防禦反應',{z:14,o:sg(t,10.5,11.1)})+T(655,120,'反應快、強度更強',{w:700,z:19,f:C.acc,o:sg(t,10.5,11.1)});
+ return h;},
+points:['疫苗運用的是專一性防禦的<b>記憶性</b>。','第一次接觸病原體（或疫苗）：反應較<b>慢</b>，效果較<b>弱</b>。','再次感染<b>相同</b>病原體：特定白血球大量增生，反應更<b>快</b>，效果更<b>強</b>。','專一性：流感病毒引發的防禦作用，只能對抗<b>流感病毒</b>。','接種疫苗可預防疾病的<b>感染和擴散</b>。'],
+rhyme:'一回生（慢而弱），二回熟（快而強）。'});
+</script>
+
+<script>
+/* ---------- 播放器 ---------- */
+(function(){
+const $=id=>document.getElementById(id);
+const stat=$('stat'),dyn=$('dyn'),cap=$('cap'),play=$('play'),seek=$('seek'),next=$('next'),prev=$('prev'),notes=$('notes');
+let i=0,t=0,playing=false,last=0,reciting=false;const seen=new Set();
+try{const v=parseInt(localStorage.getItem('ch3-stage'),10);if(v>=0&&v<S.length)i=v;}catch(e){}
+
+S.forEach((s,k)=>{
+  if(k>0&&s.unit!==S[k-1].unit){const g=document.createElement('li');g.className='gap';g.setAttribute('aria-hidden','true');$('steps').appendChild(g);}
+  const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.textContent=k+1;b.title=s.title;b.setAttribute('aria-label','階段 '+(k+1)+'：'+s.title);
+  b.addEventListener('click',()=>go(k));li.appendChild(b);$('steps').appendChild(li);s.btn=b;});
+UNITS.forEach((u,k)=>{const b=document.createElement('button');b.type='button';b.textContent=u;b.addEventListener('click',()=>go(S.findIndex(s=>s.unit===k)));$('units').appendChild(b);});
+
+function local(){const s=S[i];return s.loop?t%s.dur:Math.min(t,s.dur);}
+function draw(){const s=S[i],lt=local();dyn.innerHTML=s.tick(lt);
+  let c=s.caps[0][1];for(const[a,txt]of s.caps)if(lt>=a)c=txt;if(cap.textContent!==c)cap.textContent=c;
+  seek.value=Math.round(lt/s.dur*1000);}
+function ui(){const s=S[i],end=!s.loop&&t>=s.dur;
+  play.textContent=playing?'⏸ 暫停':end?'↺ 再看一次':t>0?'▶ 繼續':'▶ 開始';
+  next.classList.toggle('ready',seen.has(i)&&i<S.length-1);next.disabled=i===S.length-1;prev.disabled=i===0;
+  S.forEach((x,k)=>{x.btn.classList.toggle('seen',seen.has(k));x.btn.setAttribute('aria-current',k===i?'true':'false');});
+  [...$('units').children].forEach((b,k)=>b.setAttribute('aria-current',k===s.unit?'true':'false'));
+  $('hint').textContent=reciting?'點一下空格就能看答案。先在心裡說出答案，再點開核對。':seen.has(i)?(i<S.length-1?'看完了。試著不看筆記說一次重點，再按「下一階段」。':'全部看完了。開啟背誦模式，從第 1 階段再檢查一次自己。'):'按「開始」看動畫，隨時可以暫停或拖動進度條重看。';}
+function go(k){i=cl(k,0,S.length-1);t=0;playing=false;const s=S[i];
+  stat.innerHTML=s.svg;$('num').textContent=UNITS[s.unit]+'・階段 '+(i+1)+'／'+S.length;$('title').textContent=s.title;
+  $('points').innerHTML=s.points.map(p=>'<li>'+p.replace(/<b>/g,'<b class="k" tabindex="0">')+'</li>').join('');$('rhyme').textContent=s.rhyme;
+  try{localStorage.setItem('ch3-stage',i);}catch(e){}
+  draw();ui();}
+function frame(now){if(!playing)return;t+=Math.min(.1,(now-last)/1000);last=now;const s=S[i];
+  if(t>=s.dur&&!seen.has(i)){seen.add(i);ui();}
+  if(!s.loop&&t>=s.dur){t=s.dur;playing=false;ui();}
+  draw();if(playing)requestAnimationFrame(frame);}
+function toggle(){const s=S[i];if(playing){playing=false;}else{if(!s.loop&&t>=s.dur)t=0;playing=true;last=performance.now();requestAnimationFrame(frame);}ui();}
+
+play.addEventListener('click',toggle);
+$('replay').addEventListener('click',()=>{t=0;draw();if(!playing)toggle();});
+seek.addEventListener('input',()=>{playing=false;t=seek.value/1000*S[i].dur;draw();ui();});
+next.addEventListener('click',()=>go(i+1));prev.addEventListener('click',()=>go(i-1));
+$('recite').addEventListener('click',e=>{reciting=!reciting;notes.classList.toggle('reciting',reciting);e.currentTarget.setAttribute('aria-pressed',reciting);e.currentTarget.textContent=reciting?'顯示全部關鍵字':'背誦模式：遮住關鍵字';notes.querySelectorAll('.k.open').forEach(k=>k.classList.remove('open'));ui();});
+$('points').addEventListener('click',e=>{const k=e.target.closest('.k');if(k&&reciting)k.classList.toggle('open');});
+$('points').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('k')&&reciting){e.preventDefault();e.target.classList.toggle('open');}});
+document.addEventListener('keydown',e=>{if(e.target.closest('button,input,.k'))return;if(e.key===' '){e.preventDefault();toggle();}else if(e.key==='ArrowRight')go(i+1);else if(e.key==='ArrowLeft')go(i-1);});
+go(i);
+})();
+</script>
+</body>
+</html>
