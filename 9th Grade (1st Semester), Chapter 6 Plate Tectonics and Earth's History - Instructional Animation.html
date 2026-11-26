@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>板塊運動與地球歷史 教學動畫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 版面：左邊是動畫舞台與播放控制，右邊是可遮字背誦的重點筆記；窄螢幕時上下堆疊 */
+  --paper:#eff1ec; --card:#ffffff; --ink:#1b2230; --muted:#5a6475; --line:#d5d9e2;
+  --accent:#7a5a12; --accent-soft:#f1e6cc; --memo:#fff4cc;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;padding:18px 20px 12px;max-width:1280px;margin:0 auto}
+.eyebrow{font-size:13px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-size:26px;margin:0;line-height:1.25}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,.k:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+nav button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px;padding:0 20px 28px;max-width:1280px;margin:0 auto;align-items:start}
+.stage,.notes{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stagehead{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-bottom:8px}
+#num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.06em}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+svg#svg{display:block;width:100%;height:auto;background:#fafbfc;border:1px solid var(--line);border-radius:12px}
+svg text{font-family:var(--body)}
+.cap{min-height:3.2em;margin:10px 2px 8px;font-size:17px;font-weight:500}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;min-width:116px;padding:10px 16px}
+.primary:hover{filter:brightness(1.08)}
+#seek{flex:1 1 160px;accent-color:var(--accent);min-width:120px}
+.nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0;justify-content:center;flex:1 1 200px}
+#steps button{width:30px;height:30px;padding:0;border-radius:50%;font-size:13px;font-variant-numeric:tabular-nums}
+#steps button.seen{background:var(--accent-soft);border-color:var(--accent)}
+#steps button[aria-current="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+#steps li.gap{width:8px}
+#next.ready{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.noteshead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+h3{font-family:var(--display);font-size:19px;margin:0}
+#recite[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+#points{margin:12px 0;padding-left:1.2em;display:flex;flex-direction:column;gap:9px}
+.k{font-weight:700;color:var(--accent);border-radius:4px;padding:0 2px}
+.reciting .k{color:transparent;background:var(--accent-soft);border-bottom:2px solid var(--accent);cursor:pointer;user-select:none}
+.reciting .k.open{color:var(--accent);background:none;border-bottom-color:transparent}
+.rhyme{background:var(--memo);border-radius:12px;padding:10px 14px}
+.rhyme span{font-size:12px;font-weight:700;letter-spacing:.1em;color:#7a5a00}
+.rhyme p{margin:2px 0 0;font-family:var(--display);font-size:19px;line-height:1.5}
+.hint{font-size:14px;color:var(--muted);margin:12px 2px 0}
+@media (max-width:860px){main{grid-template-columns:1fr}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="eyebrow">國中自然 3 上・第 6 章</div><h1>板塊運動與地球歷史</h1></div>
+  <nav id="units" aria-label="單元"></nav>
+</header>
+<main>
+  <section class="stage" aria-label="動畫">
+    <div class="stagehead"><span id="num"></span><h2 id="title"></h2></div>
+    <svg id="svg" viewBox="0 0 800 450" role="img" aria-labelledby="title">
+      <defs>
+        <marker id="ahR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d43d3d"/></marker>
+        <marker id="ahB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4a63c9"/></marker>
+        <marker id="ahK" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#56665e"/></marker>
+        <linearGradient id="gcap" gradientUnits="userSpaceOnUse" x1="270" x2="530" y1="0" y2="0"><stop offset="0" stop-color="#e86a5e"/><stop offset="1" stop-color="#7f8fe0"/></linearGradient>
+        <linearGradient id="gcap2" gradientUnits="userSpaceOnUse" x1="40" x2="520" y1="0" y2="0"><stop offset="0" stop-color="#f08a80"/><stop offset="1" stop-color="#a9b4ea"/></linearGradient>
+      </defs>
+      <g id="stat"></g><g id="dyn"></g>
+    </svg>
+    <p class="cap" id="cap" aria-live="polite"></p>
+    <div class="controls">
+      <button id="play" class="primary" type="button">▶ 開始</button>
+      <button id="replay" type="button">↺ 從頭播放</button>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="動畫進度">
+    </div>
+    <div class="nav">
+      <button id="prev" type="button">← 上一階段</button>
+      <ol id="steps" aria-label="階段"></ol>
+      <button id="next" type="button">下一階段 →</button>
+    </div>
+  </section>
+  <aside class="notes" id="notes" aria-label="重點歸納">
+    <div class="noteshead"><h3>重點歸納</h3><button id="recite" type="button" aria-pressed="false">背誦模式：遮住關鍵字</button></div>
+    <ul id="points"></ul>
+    <div class="rhyme"><span>背誦口訣</span><p id="rhyme"></p></div>
+    <p class="hint" id="hint"></p>
+  </aside>
+</main>
+
+<script id="stages">
+/* ---------- 繪圖小工具（只回傳 SVG 字串，不碰 DOM） ---------- */
+const C={ink:'#1b2230',mut:'#56665e',P:'#d43d3d',N:'#2f6fd6',K:'#e08a1e',U:'#2f9e6b',E:'#7a4fc7',line:'#c9ced8',bg:'#fafbfc',cont:'#c9a66b',ocean:'#5b6b7d',mantle:'#e08a4a',asth:'#f0a868',core:'#f2c94c',sea:'#8cc4ee',magma:'#e2452f',lith:'#9a9b78'};
+const LY=['#ead9a8','#c9b07a','#a98b5e','#8c6f4a'];
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const sg=(t,a,b)=>cl((t-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const n1=n=>(Math.round(n*10)/10);
+const PI=Math.PI,RAD=PI/180;
+const dot=(x,y,r,fill,o=1,ex='')=>`<circle cx="${n1(x)}" cy="${n1(y)}" r="${n1(Math.max(0,r))}" fill="${fill}" opacity="${n1(cl(o)*100)/100}" ${ex}/>`;
+const T=(x,y,s,o={})=>`<text x="${n1(x)}" y="${n1(y)}" text-anchor="${o.a||'middle'}" font-size="${o.z||17}" font-weight="${o.w||500}" fill="${o.f||C.ink}" opacity="${n1(cl(o.o??1)*100)/100}">${s}</text>`;
+const AR=(x1,y1,x2,y2,c='R',w=4,o=1)=>`<line x1="${n1(x1)}" y1="${n1(y1)}" x2="${n1(x2)}" y2="${n1(y2)}" stroke="${{R:C.P,B:'#4a63c9',K:C.mut}[c]}" stroke-width="${w}" marker-end="url(#ah${c})" opacity="${o}"/>`;
+const RC=(x,y,w,h,fill,ex='')=>`<rect x="${n1(x)}" y="${n1(y)}" width="${n1(Math.max(0,w))}" height="${n1(Math.max(0,h))}" fill="${fill}" ${ex}/>`;
+const along=(pts,s)=>{for(let i=1;i<pts.length;i++){const[ax,ay]=pts[i-1],[bx,by]=pts[i],d=Math.hypot(bx-ax,by-ay);if(s<=d||i===pts.length-1){const p=d?cl(s/d):0;return[ax+(bx-ax)*p,ay+(by-ay)*p];}s-=d;}};
+const plen=pts=>pts.slice(1).reduce((a,p,i)=>a+Math.hypot(p[0]-pts[i][0],p[1]-pts[i][1]),0);
+const PL=(x,y,z=18,o=1)=>T(x,y+z*.35,'＋',{w:700,z,f:C.P,o}),MI=(x,y,z=18,o=1)=>T(x,y+z*.35,'－',{w:700,z,f:C.N,o});
+const W=(d)=>`<path d="${d}" fill="none" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>`;
+const bulb=(x,y,br)=>dot(x,y,24+10*br,'#f6c545',.45*br)+dot(x,y,15,'#fff',1,`stroke="${C.ink}" stroke-width="2.5"`)+dot(x,y,14,'#f6c545',br)+`<path d="M${x-8} ${y-8}L${x+8} ${y+8}M${x+8} ${y-8}L${x-8} ${y+8}" stroke="${C.ink}" stroke-width="1.5"/>`;
+const batH=(x,y)=>RC(x-6,y-4,12,8,C.bg)+`<line x1="${x-6}" y1="${y-15}" x2="${x-6}" y2="${y+15}" stroke="${C.ink}" stroke-width="2.5"/><line x1="${x+6}" y1="${y-8}" x2="${x+6}" y2="${y+8}" stroke="${C.ink}" stroke-width="6"/>`+T(x-17,y-12,'＋',{z:12,f:C.P,w:700})+T(x+18,y-12,'－',{z:12,f:C.N,w:700});
+const batV=(x,y)=>RC(x-4,y-6,8,12,C.bg)+`<line x1="${x-15}" y1="${y-6}" x2="${x+15}" y2="${y-6}" stroke="${C.ink}" stroke-width="2.5"/><line x1="${x-8}" y1="${y+6}" x2="${x+8}" y2="${y+6}" stroke="${C.ink}" stroke-width="6"/>`+T(x-24,y-8,'＋',{z:12,f:C.P,w:700})+T(x-24,y+16,'－',{z:12,f:C.N,w:700});
+const flow=(pts,n,ph,col,r=5)=>{const L=plen(pts);let h='';for(let i=0;i<n;i++){const[x,y]=along(pts,(((ph+i/n)%1)+1)%1*L);h+=dot(x,y,r,col);}return h;};
+const chips=(labs,act)=>labs.map((n,k)=>{const w=760/labs.length,x=20+w*k,a=act===k;return RC(x+4,372,w-8,34,a?C.E:'#fff',`rx="17" stroke="${a?C.E:'#d5d9e2'}" stroke-width="2"`)+T(x+w/2,395,n,{w:700,z:15,f:a?'#fff':k<act?C.ink:C.mut});}).join('');
+const panels=`${[15,280,545].map(x=>`<rect x="${x}" y="50" width="240" height="270" rx="16" fill="#fff" stroke="#d5d9e2"/>`).join('')}`;
+
+const UNITS=['地球構造與板塊','岩層記錄的歷史','臺灣的板塊和地震','給你的話'];
+const S=[];
+const poly=(pts,fill,ex='')=>`<path d="M${pts.map(p=>n1(p[0])+' '+n1(p[1])).join('L')}Z" fill="${fill}" ${ex}/>`;
+
+/* ---------- 1 地球的內部構造 ---------- */
+S.push({unit:0,title:'地球的內部構造',dur:14,loop:false,svg:
+`${dot(200,235,170,C.cont)}${dot(200,235,162,C.mantle)}${dot(200,235,92,C.core)}
+${RC(450,52,330,340,'#fff','rx="14" stroke="#d5d9e2"')}${RC(460,112,146,8,C.sea)}${RC(460,120,146,14,C.ocean)}
+${poly([[600,120],[624,96],[770,96],[770,182],[646,182],[606,134]],C.cont)}${poly([[460,134],[606,134],[646,182],[770,182],[770,250],[460,250]],C.lith)}
+${RC(460,250,310,80,C.asth)}${RC(460,330,310,52,C.mantle)}
+${T(533,106,'海洋地殼（約 7 km）',{z:11})}${T(700,140,'大陸地殼',{w:700,z:14})}${T(700,160,'（約 40 km）',{z:11})}${T(548,200,'地函最上部',{z:13})}${T(615,366,'地函',{z:13})}
+${T(200,438,'密度：地殼 ＜ 地函 ＜ 地核',{w:700,z:16})}`,
+caps:[[0,'地球內部挖不到，科學家是靠地震波在地球內部的反射、折射和速度變化來推知構造。'],[1,'最外層是地殼，主要由岩石組成，是三層中最薄的。'],[4,'中間是地函，主要也是岩石，密度比地殼大。'],[7,'最內層是地核，主要是鐵、鎳等金屬，密度最大。'],[10,'放大看最外面：地殼加上地函最上部合稱岩石圈，堅硬；它下面是軟流圈，會極緩慢流動。']],
+tick(t){const o=(a)=>t<.01||t>=13.9?1:.25+.75*sg(t,a,a+1),inset=t>=10;let h='';
+ h+=`<line x1="62" y1="92" x2="84" y2="114" stroke="${C.ink}" stroke-width="1.5" opacity="${o(1)}"/>`+T(16,62,'地殼（岩石）',{a:'start',w:700,z:17,o:o(1)})+T(16,84,'約 7～40 km 厚',{a:'start',z:12,f:C.mut,o:o(1)});
+ h+=T(200,108,'地函',{w:700,z:20,o:o(4)})+T(200,130,'岩石・到約 2900 km 深',{z:12,o:o(4)});
+ h+=T(200,232,'地核',{w:700,z:20,o:o(7)})+T(200,254,'鐵、鎳等金屬',{z:13,o:o(7)})+T(200,274,'到地心約 6370 km',{z:11,o:o(7)});
+ const oi=t<.01||t>=13.9?1:.3+.7*sg(t,10,11);
+ h+=`<g opacity="${n1(oi*100)/100}"><path d="M772 96H779V250H772" fill="none" stroke="${C.ink}" stroke-width="2"/>`+T(615,78,'岩石圈（厚約 100 km）＝ 地殼 ＋ 地函最上部',{w:700,z:13})+T(615,292,'軟流圈',{w:700,z:17})+T(615,314,'溫度接近岩石熔點・可塑・極緩慢流動',{z:12})+'</g>';
+ if(inset)for(let k=0;k<6;k++)h+=dot(464+((t*10+k*52)%302),262+(k%3)*4,3.5,C.magma,.7);
+ return h;},
+points:['科學家主要利用<b>地震波</b>在地球內部的反射、折射和速度變化，推知地球內部的構造。','地球內部由外而內分為<b>地殼、地函、地核</b>三層。','地殼由<b>岩石</b>組成：大陸地殼主要是<b>花岡岩</b>，海洋地殼主要是<b>玄武岩</b>；大陸地殼較<b>厚</b>，密度較<b>小</b>。','地函主要由<b>岩石</b>組成，密度比地殼大；地核主要由<b>鐵、鎳</b>等金屬構成，密度<b>最大</b>。','<b>岩石圈</b>包含地殼與地函最上部，由堅硬的岩石構成；其下的<b>軟流圈</b>溫度接近岩石熔點，具<b>可塑性</b>和極緩慢的流動性。'],
+rhyme:'殼、函、核，越往內密度越大；岩石圈在上，軟流圈在下。'});
+
+/* ---------- 2 板塊運動的動力 ---------- */
+const cell=(cx,dir)=>{const p=[];for(let i=0;i<=48;i++){const a=2*PI*i/48;p.push([cx+dir*150*Math.cos(a),245-62*Math.sin(a)]);}return p;},CL=cell(228,1),CR=cell(572,-1);
+S.push({unit:0,title:'板塊為什麼會動',dur:12,loop:true,svg:
+`${RC(40,150,720,190,C.asth,'rx="6"')}${RC(40,318,720,22,C.magma,'opacity=".55"')}${T(400,335,'地球內部的熱能',{z:13,f:'#fff',w:700})}
+${T(400,84,'分離處',{w:700,z:16,f:C.P})}${T(78,84,'推擠處',{w:700,z:16})}${T(722,84,'推擠處',{w:700,z:16})}${T(228,250,'軟流圈緩慢對流',{z:14})}${T(572,250,'軟流圈緩慢對流',{z:14})}
+${T(400,396,'軟流圈受地球內部的熱能驅使而緩慢對流，帶動上方的板塊移動',{w:700,z:16})}${T(400,424,'岩石圈分裂成數個區塊，稱為板塊；板塊之間有推擠，也有分離',{z:14,f:C.mut})}`,
+caps:[[0,'堅硬的岩石圈裂成好幾塊，每一塊叫做板塊，底下是會緩慢流動的軟流圈。'],[3,'地球內部的熱讓軟流圈緩慢對流：熱的往上升，冷的往下沉。'],[6,'對流帶著上方的板塊一起移動。上升的地方，板塊互相分離。'],[9,'下沉的地方，板塊互相推擠。這就是板塊運動。']],
+tick(t){let h=RC(40,112,356,38,C.lith)+RC(404,112,356,38,C.lith)+RC(396,112,8,40,C.magma);
+ for(let k=0;k<9;k++){const d=(t*14+k*40)%356;h+=`<line x1="${n1(396-d)}" y1="116" x2="${n1(396-d)}" y2="146" stroke="#fff" opacity=".45"/><line x1="${n1(404+d)}" y1="116" x2="${n1(404+d)}" y2="146" stroke="#fff" opacity=".45"/>`;}
+ h+=T(210,137,'板塊',{w:700,z:15,f:'#fff'})+T(590,137,'板塊',{w:700,z:15,f:'#fff'})+AR(340,98,260,98,'K')+AR(460,98,540,98,'K');
+ h+=flow(CL,10,t/12,C.magma,5)+flow(CR,10,t/12,C.magma,5)+AR(54,160,54,205,'K',3)+AR(746,160,746,205,'K',3)+AR(400,230,400,170,'R',3);
+ return h;},
+points:['岩石圈分裂為數個區塊，稱為<b>板塊</b>。','軟流圈受到地球內部的<b>熱能</b>驅使而緩慢<b>對流</b>，帶動上方的板塊移動，稱為<b>板塊運動</b>。','各板塊移動方向不同，板塊之間有<b>推擠</b>（聚合）和<b>分離</b>（張裂）等現象。','板塊間的相對運動會使岩層傾斜彎曲、斷裂錯動，甚至深埋變質或<b>熔融</b>。','板塊運動是由地球內部能量驅動的<b>內營力</b>作用。'],
+rhyme:'熱對流帶著板塊走；上升處分離，下沉處推擠。'});
+
+/* ---------- 3 板塊分離 ---------- */
+const rtop=x=>150-30*Math.exp(-(((x-400)/60)**2));
+S.push({unit:0,title:'板塊互相分離：中洋脊',dur:14,loop:false,svg:
+`${RC(60,70,680,118,C.sea)}${RC(60,188,680,150,C.asth)}${poly([[384,338],[416,338],[402,128],[398,128]],C.magma,'opacity=".85"')}
+${RC(60,58,34,130,C.cont)}${RC(706,58,34,130,C.cont)}${T(77,50,'大陸',{z:11})}${T(723,50,'大陸',{z:11})}${T(400,54,'中洋脊',{w:700,z:17})}
+${T(400,216,'新',{w:700,z:17,f:C.magma})}${T(110,216,'老',{w:700,z:17})}${T(690,216,'老',{w:700,z:17})}${T(250,216,'← 離中洋脊越遠，岩石越老',{z:13})}${T(550,216,'離中洋脊越遠，岩石越老 →',{z:13})}${T(430,300,'岩漿',{a:'start',z:14})}
+${T(400,384,'板塊分離處：岩漿湧出，冷卻後形成新的海洋地殼',{w:700,z:16})}${T(400,412,'例：冰島（中洋脊露出海面）、東非大裂谷（陸地上的分裂交界）',{z:14,f:C.mut})}`,
+caps:[[0,'兩個板塊互相分離的地方，大多在海底。'],[1,'分開的地方，玄武岩質的岩漿不斷湧出，形成綿延的海底火山，稱為中洋脊。'],[5,'岩漿冷卻凝固，變成新的海洋地殼，再被推向兩側。看顏色：紅色是剛形成的。'],[9,'所以越靠近中洋脊的岩石越年輕，越往外側越古老。']],
+tick(t){const off=(t*10)%30;let h='';
+ [-1,1].forEach(sd=>{for(let k=0;k<13;k++){const a=Math.max(0,off+(k-1)*30),b=off+k*30;if(b<=0||a>=306)continue;const bb=Math.min(b,306),x1=400+sd*a,x2=400+sd*bb,ag=cl((a+bb)/2/300),c=`rgb(${Math.round(lerp(217,91,ag))},${Math.round(lerp(98,107,ag))},${Math.round(lerp(59,125,ag))})`;
+  h+=poly([[x1,rtop(x1)],[x2,rtop(x2)],[x2,188],[x1,188]],c,'stroke="#fff" stroke-opacity=".35"');}});
+ for(let k=0;k<4;k++){const q=(t*.5+k/4)%1;h+=dot(400,330-190*q,5,'#ffd08a',1-q*.5);}
+ h+=AR(330,104,250,104,'K')+AR(470,104,550,104,'K');return h;},
+points:['兩個板塊互相分離時，交界處<b>岩漿活動</b>頻繁，大多分布在<b>海底</b>。','分離處形成綿延的海底火山，稱為<b>中洋脊</b>。','中洋脊湧出的<b>玄武岩質</b>岩漿冷卻凝固後，形成新的<b>海洋地殼</b>。','越靠近中洋脊的岩石越<b>年輕</b>，越往外側越<b>古老</b>。','中洋脊頂部露出海面形成島，例如<b>冰島</b>；分裂交界在陸地上則形成<b>裂谷</b>，例如<b>東非大裂谷</b>。'],
+rhyme:'分離處有中洋脊和裂谷；近脊的岩石新，遠脊的岩石老。'});
+
+/* ---------- 4 隱沒 ---------- */
+const SLAB=[[0,185],[400,185],[452,206],[670,362]],SLL=plen(SLAB);
+S.push({unit:0,title:'板塊互相推擠：隱沒、海溝與火山',dur:14,loop:false,svg:
+`${RC(0,150,800,220,C.asth)}${poly([[0,120],[452,120],[452,150],[448,196],[400,170],[0,170]],C.sea)}
+<path d="M0 185H400L452 206L670 362" fill="none" stroke="${C.ocean}" stroke-width="30" stroke-linejoin="round"/>
+${poly([[440,150],[800,150],[800,242],[566,242],[456,192]],C.cont)}${poly([[640,150],[672,108],[704,150]],'#a98b5e')}
+${T(190,160,'海洋',{z:13,f:'#2a5d8a'})}${T(700,205,'大陸地殼',{w:700,z:15})}${T(447,104,'海溝',{w:700,z:16})}<line x1="447" y1="110" x2="447" y2="150" stroke="${C.ink}" stroke-width="1.5"/>
+${T(500,322,'隱沒 ↘',{w:700,z:16})}${T(714,112,'火山',{a:'start',w:700,z:15})}
+${T(400,404,'海洋地殼密度較大，推擠時向下沉入地函（隱沒）：形成海溝、山脈和火山',{w:700,z:16})}${T(400,430,'例：南美洲的安地斯山脈',{z:14,f:C.mut})}`,
+caps:[[0,'這裡是板塊互相推擠的地方：左邊是海洋地殼，右邊是大陸地殼。'],[1,'海洋地殼密度比較大，所以被擠到下面，沉入地函裡，這叫做隱沒。交界處的海底形成深深的海溝。'],[5,'大陸地殼這一側的岩層被擠得隆起，形成山脈，這個過程叫造山運動。'],[9,'隱沒下去的岩石有一部分熔融成岩漿，往上噴出地表，就形成火山。']],
+tick(t){let h='';for(let k=0;k<12;k++){const[x,y]=along(SLAB,(t*22+k*66)%SLL);h+=dot(x,y,3.5,'#fff',.55);}
+ h+=T(170,191,'海洋地殼（密度較大）',{w:700,z:14,f:'#fff'})+AR(40,210,110,210,'K');
+ const g=sg(t,5,9),hh=58*g;h+=poly([[462,150],[500,150-hh],[528,150-.5*hh],[562,150-.9*hh],[598,150-.4*hh],[628,150]],'#a98b5e');
+ if(g>.5)h+=T(545,150-hh-12,'山脈（造山運動）',{w:700,z:14,o:sg(g,.5,.9)});
+ if(t>=7){for(let k=0;k<4;k++){const q=(t*.35+k/4)%1;h+=dot(lerp(610,672,q),lerp(322,150,q),5,C.magma,.9);}h+=T(692,284,'岩漿',{a:'start',z:14,f:C.magma,w:700});}
+ if(t>=9.5)for(let k=0;k<5;k++){const q=(t*1.2+k/5)%1;h+=dot(672+(k-2)*9*q,108-34*q,4,C.magma,1-q);}
+ return h;},
+points:['板塊互相推擠時，若一邊是大陸地殼、一邊是海洋地殼，海洋地殼因平均密度較<b>大</b>，會往下沉沒到地函裡，稱為<b>隱沒</b>。','隱沒的交界處在海底形成深溝狀地形，稱為<b>海溝</b>。','大陸地殼一側的岩層隆起形成<b>山脈</b>，這個過程稱為<b>造山運動</b>，例如<b>安地斯山脈</b>。','隱沒過程中，部分岩石熔融成<b>岩漿</b>，噴出地表形成<b>火山</b>。'],
+rhyme:'海洋地殼重，往下隱沒；海溝、山脈、火山一起出現。'});
+
+/* ---------- 5 大陸碰大陸 ---------- */
+S.push({unit:0,title:'大陸與大陸推擠，以及地震和火山的分布',dur:12,loop:false,svg:
+`${RC(0,170,800,170,C.asth)}${T(120,216,'大陸地殼',{w:700,z:15})}${T(680,216,'大陸地殼',{w:700,z:15})}
+${T(400,376,'兩邊都是大陸地殼：地殼顯著增厚並向上隆起，形成高聳的山脈',{w:700,z:16})}${T(400,404,'板塊交界處的岩層受力斷裂、錯動，所以地震頻繁，附近也常有火山',{z:15})}${T(400,430,'全球的地震和火山，大多分布在板塊交界處',{z:14,f:C.mut})}`,
+caps:[[0,'如果互相推擠的兩邊都是大陸地殼，誰也不容易沉下去。'],[1,'兩塊大陸地殼擠在一起，地殼越擠越厚，並且向上隆起。'],[6,'高聳的山脈就這樣形成了，例如喜馬拉雅山脈。'],[8.5,'岩層在巨大的作用力下斷裂、錯動，所以板塊交界處地震特別多。']],
+tick(t){const g=sg(t,1,7),xl=330+45*g,xr=470-45*g,hs=[0,.3,.7,1,.62,.82,.3,0];let h=RC(0,170,xl,80,C.cont)+RC(xr,170,800-xr,80,C.cont);
+ const top=hs.map((v,i)=>[lerp(xl-110,xr+110,i/7),170-125*g*v]),bot=[[xr+110,250],[xr+50,250],[400,250+48*g],[xl-50,250],[xl-110,250]];
+ h+=poly(top.concat(bot),'#b8935a')+AR(150,150,230,150)+AR(650,150,570,150);
+ if(g>.6)h+=T(400,170-125*g-14,'喜馬拉雅山脈',{w:700,z:16,o:sg(g,.6,1)});
+ if(t>=8.5)[[380,230],[425,265],[400,200]].forEach(([x,y],i)=>{const q=(t*.9+i/3)%1;h+=dot(x,y,6+16*q,C.P,.5*(1-q))+dot(x,y,5,C.P);});
+ if(t>=8.5)h+=T(470,292,'地震',{a:'start',w:700,z:15,f:C.P});
+ return h;},
+points:['板塊互相推擠時，若交界兩邊都是<b>大陸地殼</b>，地殼會顯著<b>增厚</b>並向上隆起，形成高聳的山脈，例如<b>喜馬拉雅山脈</b>。','板塊交界處的岩層受巨大作用力而斷裂、錯動，造成頻繁的<b>地震</b>。','全球的地震和<b>火山</b>大多分布在<b>板塊交界</b>處，兩者的分布高度重疊。','板塊<b>分離</b>處的地形：中洋脊、裂谷、火山；板塊<b>推擠</b>處的地形：海溝、火山、高聳山脈。'],
+rhyme:'分離有脊和谷，推擠有溝和山；地震、火山都在板塊交界。'});
+
+/* ---------- 6 褶皺 ---------- */
+S.push({unit:1,title:'褶皺：岩層被擠彎了',dur:12,loop:false,svg:
+`${T(400,384,'褶皺：岩層受力被擠壓而產生彎曲的構造',{w:700,z:17})}${T(400,412,'褶皺在地底下形成：地底溫度較高，堅硬的岩層受擠壓時容易彎曲',{z:14,f:C.mut})}`,
+caps:[[0,'沉積岩層原本是一層一層水平堆疊的。'],[1,'兩側有擠壓的力推過來，岩層慢慢彎曲。'],[7,'彎曲的構造叫做褶皺。向上凸起的部分是背斜，向下凹的部分是向斜。'],[10,'岩層有彎曲，就表示這裡的岩層曾經受過力。']],
+tick(t){const g=sg(t,1,7),hw=280*(1-.3*g),A=44*g,wv=x=>-A*Math.cos(2*PI*(x-400)/(hw*1.33));let h='';
+ for(let i=0;i<4;i++){const y1=150+i*30,pts=[];for(let k=0;k<=40;k++){const x=400-hw+2*hw*k/40;pts.push([x,y1+wv(x)]);}for(let k=40;k>=0;k--){const x=400-hw+2*hw*k/40;pts.push([x,y1+30+wv(x)]);}h+=poly(pts,LY[i],'stroke="#6b5a3a" stroke-width="1"');}
+ h+=AR(400-hw-78,210,400-hw-14,210)+AR(400+hw+78,210,400+hw+14,210)+T(400-hw-46,196,'擠壓',{z:13,f:C.P})+T(400+hw+46,196,'擠壓',{z:13,f:C.P});
+ const o=sg(g,.8,1);if(o>0){h+=T(400,150-A-14,'背斜（凸起）',{w:700,z:17,o})+T(400-hw*.665,270+A+24,'向斜（凹下）',{w:700,z:17,o})+T(400+hw*.665,270+A+24,'向斜（凹下）',{w:700,z:17,o});}
+ return h;},
+points:['岩層受力被<b>擠壓</b>而產生彎曲的構造，稱為<b>褶皺</b>。','褶皺凸起的部分稱為<b>背斜</b>，凹下的部分稱為<b>向斜</b>。','褶皺是在<b>地底下</b>形成的：地底溫度較高，岩層受擠壓容易<b>彎曲</b>。','地球的歷史記錄在<b>岩層</b>中：岩層若有傾斜、彎曲、斷裂、錯動，可推知曾經<b>受力</b>。'],
+rhyme:'凸起是背斜，凹下是向斜；擠壓彎曲成褶皺。'});
+
+/* ---------- 7 斷層 ---------- */
+const fblock=(x0,dx,dy,side)=>{let h='';const xf=y=>x0+150-60*(y-110)/140;for(let i=0;i<3;i++){const y1=110+i*46.67,y2=y1+46.67;h+=side<0?poly([[x0+30,y1],[xf(y1),y1],[xf(y2),y2],[x0+30,y2]],LY[i],'stroke="#6b5a3a"'):poly([[xf(y1),y1],[x0+210,y1],[x0+210,y2],[xf(y2),y2]],LY[i],'stroke="#6b5a3a"');}return `<g transform="translate(${n1(dx)} ${n1(dy)})">${h}</g>`;};
+S.push({unit:1,title:'斷層：岩層斷裂並錯動',dur:15,loop:false,svg:panels+
+`${T(135,346,'正斷層',{w:700,z:19})}${T(135,372,'上盤相對下盤向下滑動',{z:14})}${T(135,394,'（岩層受拉張）',{z:13,f:C.mut})}
+${T(400,346,'逆斷層',{w:700,z:19})}${T(400,372,'上盤相對下盤向上推移',{z:14})}${T(400,394,'（岩層受擠壓）',{z:13,f:C.mut})}
+${T(665,346,'平移斷層',{w:700,z:19})}${T(665,372,'兩側只在水平方向錯動',{z:14})}${T(665,394,'（從上方往下看）',{z:13,f:C.mut})}
+${T(400,434,'岩層斷裂錯動時，能量以震動的形式釋出，向四面八方傳遞，就是地震波',{z:14,f:C.mut})}`,
+caps:[[0,'岩層受力超過極限就會斷裂、錯動，形成斷層。斷層面上方那一塊叫上盤，下方那一塊叫下盤。'],[1,'正斷層：岩層被往兩邊拉，上盤順著斷層面往下滑。'],[5,'逆斷層：岩層被往中間擠，上盤沿著斷層面往上推。'],[10,'平移斷層：兩側的岩層只有水平方向的錯動，沒有上下移動。']],
+tick(t){const a=t<.01||t>=15?-1:Math.floor(t/5),d=i=>t>=15?26:a===i?26*sg(t-5*i,1,3.5):a>i?26:0,op=i=>a<0||a===i?1:.4;let h='';
+ [0,1].forEach(i=>{const x0=15+265*i,dd=d(i)*(i?-1:1);
+  h+=`<g opacity="${op(i)}">`+fblock(x0,0,0,1)+fblock(x0,-.394*dd,.919*dd,-1)+T(x0+62-.394*dd,190+.919*dd,'上盤',{w:700,z:14})+T(x0+178,190,'下盤',{w:700,z:14});
+  h+=i?AR(x0+8,92,x0+48,92)+AR(x0+232,92,x0+192,92):AR(x0+52,92,x0+12,92)+AR(x0+188,92,x0+228,92);
+  h+=T(x0+120,74,i?'擠壓':'拉張',{z:13,f:C.P})+'</g>';});
+ const x0=545,dd=d(2);h+=`<g opacity="${op(2)}">`+RC(x0+40,110-0,80,150,'#b9d49a')+RC(x0+120,110,80,150,'#b9d49a')+RC(x0+40,172-dd,80,18,'#8c8f96')+RC(x0+120,172+dd,80,18,'#8c8f96')+`<line x1="${x0+120}" y1="100" x2="${x0+120}" y2="270" stroke="${C.P}" stroke-width="2.5" stroke-dasharray="6 5"/>`+AR(x0+106,250,x0+106,210,'K',3)+AR(x0+134,120,x0+134,160,'K',3)+T(x0+120,90,'斷層',{z:13,f:C.P})+T(x0+80,236,'道路',{z:1,o:0})+'</g>';
+ return h;},
+points:['岩層受力<b>斷裂並錯動</b>所形成的構造，稱為<b>斷層</b>。','斷層面通常是傾斜的：斷層面上方的岩層稱為<b>上盤</b>，下方的稱為<b>下盤</b>。','<b>正斷層</b>：上盤相對於下盤向<b>下</b>滑動。','<b>逆斷層</b>：上盤相對於下盤向<b>上</b>推移。','<b>平移斷層</b>：兩側岩層只在<b>水平</b>面上相對位移，沒有上下移動。','岩層斷裂錯動時，能量以震動的形式釋出並向四面八方傳遞，這就是<b>地震波</b>。'],
+rhyme:'上盤下滑正斷層，上盤上推逆斷層，水平錯開平移斷層。'});
+
+/* ---------- 8 地質事件的先後 ---------- */
+S.push({unit:1,title:'岩層記錄的地質事件：誰先誰後',dur:15,loop:false,svg:
+`${RC(150,330,500,8,'#6b5a3a')}${T(400,436,'下面的岩層先形成；切過別人的，比被切的晚發生',{w:700,z:16})}`,
+caps:[[0,'岩層會把發生過的事記下來。看這個剖面是怎麼一步一步形成的。'],[1,'沉積物一層一層水平堆上去：最先沉積的甲在最下面，再來是乙，然後是丙。'],[8.5,'後來岩漿侵入岩層的裂縫，冷卻成岩脈。它貫穿了甲、乙、丙，所以比這三層都晚。'],[11.5,'最後地表受到侵蝕，丙的上部被削掉，岩脈露出地表。所以侵蝕發生在岩脈侵入之後。']],
+tick(t){const st=t<3.5?0:t<6?1:t<8.5?2:t<11.5?3:4,nm=['甲','乙','丙'];let h=chips(['① 甲沉積','② 乙沉積','③ 丙沉積','④ 岩脈侵入','⑤ 侵蝕'],st);
+ for(let i=0;i<3;i++){const p=sg(t,1+2.5*i,3+2.5*i);if(p<=0)continue;const yb=330-50*i;h+=RC(150,yb-50*p,500,50*p,LY[2-i],'stroke="#6b5a3a"')+(p>.6?T(180,yb-18,nm[i],{w:700,z:18}):'');
+  if(p<1)for(let k=0;k<8;k++){const q=(t*1.3+k/8)%1;h+=dot(190+k*58,120+(yb-50*p-120)*q,3,'#a98b5e',.8);}}
+ const dp=sg(t,8.5,11);if(dp>0){const yt=330-150*dp,xa=y=>380+60*(330-y)/150;h+=poly([[380,330],[410,330],[xa(yt)+30,yt],[xa(yt),yt]],'#b5443a')+(dp>.5?T(476,250,'岩脈',{a:'start',w:700,z:16,f:'#b5443a'}):'');}
+ const e=sg(t,11.5,14);if(e>0){h+=RC(140,170,520,10+24*e,C.bg)+`<path d="M150 ${n1(180+24*e)}q60 -7 125 0t125 0t125 0t125 0" fill="none" stroke="#6b5a3a" stroke-width="2"/>`+T(400,160,'侵蝕',{w:700,z:16,f:C.N,o:e});}
+ return h;},
+points:['記錄在岩層中的事件稱為<b>地質事件</b>，例如沉積作用、岩層斷裂錯動、岩漿侵入。','沉積岩層的原始沉積應近乎<b>水平</b>；先沉積的岩層位在後沉積岩層的<b>下</b>方。','較早發生的事件紀錄，常受較晚發生事件的影響：岩脈<b>貫穿</b>岩層，表示岩脈的形成比這些岩層<b>晚</b>。','岩脈露出地表，可推測<b>侵蝕</b>作用發生在岩脈侵入之<b>後</b>。','砂岩層和礫岩層交錯出現，表示水流速度曾經<b>改變</b>；岩層中有珊瑚礁化石，表示曾是<b>淺海</b>環境。'],
+rhyme:'下老上新；切過別人的比較晚。'});
+
+/* ---------- 9 化石與地質年代 ---------- */
+const ERA=[[60,220,'前寒武紀','#bdb7aa'],[220,410,'古生代','#8fb7a0'],[410,600,'中生代','#e3c16f'],[600,740,'新生代','#e79a6b']];
+const spiral=(()=>{let d='';for(let i=0;i<=60;i++){const a=i/60*5*PI,r=2+i*.32;d+=(i?'L':'M')+n1(505+r*Math.cos(a))+' '+n1(74+r*Math.sin(a));}return d;})();
+S.push({unit:1,title:'化石與地質年代',dur:14,loop:false,svg:
+ERA.map(([a,b,n,c])=>RC(a,150,b-a,50,c,'stroke="#fff" stroke-width="2"')+T((a+b)/2,181,n,{w:700,z:17})).join('')+
+`${[[60,'46 億年前'],[220,'5.39 億年前'],[410,'2.52 億年前'],[600,'6600 萬年前'],[740,'現在']].map(([x,l])=>`<line x1="${x}" y1="200" x2="${x}" y2="210" stroke="${C.ink}"/>`+T(x,226,l,{z:12})).join('')}
+${T(140,250,'藻類出現，把氧氣釋放到大氣',{z:12,f:C.mut})}${T(410,250,'生物大量滅絕',{z:12,f:C.P,w:700})}${T(600,250,'生物大量滅絕',{z:12,f:C.P,w:700})}
+${T(60,290,'老',{a:'start',w:700,z:15})}${T(740,290,'新',{a:'end',w:700,z:15})}<path d="M90 285H705" stroke="${C.mut}" stroke-width="2" marker-end="url(#ahK)"/>
+${T(400,366,'分布廣泛、只大量生存在特定時期的生物，其化石可用來判斷岩層的年代',{w:700,z:16})}${T(400,394,'化石也能用來推測當時的環境，例如珊瑚礁化石表示這裡曾是淺海',{z:14,f:C.mut})}${T(400,430,'示意圖：各段的長度沒有依實際時間比例',{z:12,f:C.mut})}`,
+caps:[[0,'地球大約形成於 46 億年前。科學家依重要的地質事件和化石，把地球歷史分成幾個地質年代。'],[3,'古生代的代表化石是三葉蟲。'],[6.5,'中生代的代表化石是恐龍和多數種類的菊石。'],[10,'新生代的代表化石是多數種類的哺乳類和鳥類。']],
+tick(t){const x=60+680*sg(t,.5,12.5),o=i=>t<.01||t>=13.9?1:sg(x,ERA[i][0],ERA[i][0]+40);let h='';
+ h+=`<g opacity="${n1(o(1)*100)/100}"><ellipse cx="315" cy="74" rx="24" ry="15" fill="#5f7566"/><path d="M291 74H339M303 61V87M315 59V89M327 61V87" stroke="#dfe9e2" stroke-width="1.5"/>`+T(315,120,'三葉蟲',{w:700,z:17})+'</g>';
+ h+=`<g opacity="${n1(o(2)*100)/100}"><path d="${spiral}" fill="none" stroke="#8a6a1a" stroke-width="4"/>`+T(505,120,'恐龍、菊石',{w:700,z:17})+'</g>';
+ h+=`<g opacity="${n1(o(3)*100)/100}"><path d="M644 80q13 -22 26 -4q13 -18 26 4" fill="none" stroke="#a5532a" stroke-width="4" stroke-linecap="round"/>`+T(670,120,'哺乳類、鳥類',{w:700,z:17})+'</g>';
+ h+=`<line x1="${n1(x)}" y1="140" x2="${n1(x)}" y2="210" stroke="${C.ink}" stroke-width="3"/>`+dot(x,140,6,C.ink);return h;},
+points:['地球大約形成於 <b>46 億</b>年前。','大多數<b>化石</b>是生物遺骸被沉積物掩埋後形成的，可提供生物演化的資訊，並用來推測當時的<b>沉積環境</b>與<b>岩層年代</b>。','科學家根據重要的地質事件與化石，將地球歷史分為數個時期，稱為<b>地質年代</b>。','古生代的代表化石：<b>三葉蟲</b>。','中生代的代表化石：<b>恐龍</b>與多數種類的<b>菊石</b>。','新生代的代表化石：多數種類的<b>哺乳類與鳥類</b>。'],
+rhyme:'古生代三葉蟲，中生代恐龍和菊石，新生代哺乳類和鳥類。'});
+
+/* ---------- 10 臺灣島的形成 ---------- */
+S.push({unit:2,title:'臺灣島的形成',dur:14,loop:false,svg:
+`${RC(20,60,760,310,'#cfe3f2','rx="12"')}${poly([[20,60],[430,60],[400,215],[380,370],[20,370]],'#e6d7b5','opacity=".75"')}
+${T(140,120,'歐亞板塊',{w:700,z:22})}${T(650,330,'菲律賓海板塊',{w:700,z:22})}${T(750,96,'北',{w:700,z:14})}<path d="M750 132V104" stroke="${C.ink}" stroke-width="2.5" marker-end="url(#ahK)"/>
+${T(400,404,'歐亞板塊和菲律賓海板塊互相推擠抬升，臺灣島約在 600 萬年前露出海面',{w:700,z:16})}${T(400,430,'推擠方向接近西北—東南，所以山脈大致呈南北縱向；臺灣島至今仍在持續抬升',{z:14,f:C.mut})}`,
+caps:[[0,'臺灣位在歐亞板塊和菲律賓海板塊推擠的地方。這是從上方看的簡化示意圖。'],[1,'菲律賓海板塊朝西北方向推過來，每年大約 7 到 8 公分。'],[4,'推擠使地殼抬升，臺灣島大約在 600 萬年前露出海面，並且越長越大。'],[8,'造山運動形成了中央山脈；花東縱谷是兩個板塊交界的一部分。'],[11,'因為推擠方向接近西北—東南，山脈就大致排成南北向。到現在，臺灣島還在抬升。']],
+tick(t){const g=sg(t,3,9),s=.25+.75*g,o=t<.01?1:sg(t,2.5,3.5),m=t<.01?1:sg(t,8,9.5);let h='';
+ h+=`<g transform="translate(400 215) rotate(14) scale(${n1(s*100)/100})" opacity="${n1(o*100)/100}"><path d="M0 -120C45 -100 50 -20 30 60C20 100 5 125 0 130C-30 90 -50 20 -45 -40C-40 -90 -20 -115 0 -120Z" fill="#9ccf8a" stroke="#4c7a44" stroke-width="2"/><g opacity="${n1(m*100)/100}"><path d="M2 -92C12 -40 8 30 0 104" fill="none" stroke="#4c6b3a" stroke-width="10" stroke-linecap="round"/><path d="M24 -46C32 0 28 40 15 86" fill="none" stroke="${C.P}" stroke-width="3" stroke-dasharray="6 5"/></g></g>`;
+ if(m>0)h+=T(330,216,'中央山脈',{a:'end',w:700,z:15,o:m})+`<line x1="334" y1="212" x2="392" y2="212" stroke="${C.ink}" opacity="${m}"/>`+T(478,250,'花東縱谷',{a:'start',w:700,z:15,f:C.P,o:m})+`<line x1="474" y1="246" x2="428" y2="238" stroke="${C.P}" opacity="${m}"/>`;
+ const pu=t>=1?4*Math.sin(t*3):0;h+=AR(630+pu,292+pu*.6,548+pu,244+pu*.6)+T(600,236,'每年約 7～8 公分',{a:'start',z:14,f:C.P,w:700})+AR(170,150,222,180,'K',3);
+ h+=T(400,44,g<=0?'約 600 萬年前':g<1?`約 ${Math.round(600*(1-g)/10)*10} 萬年前`:'現在',{w:700,z:18});
+ return h;},
+points:['臺灣島大約在 <b>600 萬</b>年前露出海面，由<b>歐亞板塊</b>和<b>菲律賓海板塊</b>推擠抬升形成。','期間的造山運動形成了<b>中央山脈</b>；<b>花東縱谷</b>是兩板塊交界的一部分。','兩板塊至今仍在聚合推擠，所以臺灣島仍在<b>持續抬升</b>。','兩板塊推擠的方向接近<b>西北—東南</b>向，使臺灣的山脈和岩石種類分布大致呈<b>南北</b>縱向排列。','板塊推擠帶來許多地質活動：大屯火山群與綠島的<b>火山</b>活動、斷層錯動引發的<b>地震</b>；臺灣位於<b>環太平洋地震帶</b>上。'],
+rhyme:'歐亞板塊和菲律賓海板塊擠出臺灣島；西北東南向推擠，山脈南北向排列。'});
+
+/* ---------- 11 地震 ---------- */
+const house=(x,dx)=>`<g transform="translate(${n1(x+dx)} 0)"><rect x="-18" y="120" width="36" height="30" fill="#e9edf5" stroke="${C.ink}" stroke-width="2"/><path d="M-24 120L0 100L24 120Z" fill="#b5443a" stroke="${C.ink}" stroke-width="2"/></g>`;
+S.push({unit:2,title:'地震：震源、震央、規模與震度',dur:14,loop:false,svg:
+`<defs><clipPath id="cG"><rect x="0" y="150" width="800" height="210"/></clipPath></defs>${RC(0,150,800,210,'#e2d2ae')}<line x1="0" y1="150" x2="800" y2="150" stroke="#6b5a3a" stroke-width="3"/>
+<line x1="250" y1="350" x2="390" y2="170" stroke="#6b5a3a" stroke-width="3" stroke-dasharray="8 6"/>${T(240,344,'斷層',{a:'end',z:13})}
+<line x1="330" y1="150" x2="330" y2="262" stroke="${C.ink}" stroke-width="2" stroke-dasharray="5 5"/>${T(338,212,'震源深度',{a:'start',z:14})}${T(346,268,'震源',{a:'start',w:700,z:17,f:C.P})}${T(330,84,'震央',{w:700,z:17,f:C.P})}
+${T(640,44,'這次地震的規模：6.4',{w:700,z:17})}${T(640,66,'（各地測站算出來都一樣）',{z:12,f:C.mut})}
+${T(400,390,'規模：震源釋放能量的多寡，一次地震只有一個數值',{w:700,z:15})}${T(400,414,'震度：各地搖晃或損害的程度，通常離震央越遠越小（0～7 級，共十個等級）',{z:14})}${T(400,440,'地震時保護頭頸：趴下、掩護、穩住',{w:700,z:15,f:C.U})}`,
+caps:[[0,'岩層最先斷裂錯動的地方叫震源。從震源垂直往上到地表的那一點叫震央。'],[2,'地震波從震源向四面八方傳出去。'],[4,'離震央越近搖得越厲害。這種搖晃或損害的程度叫做震度，每個地方都不一樣。'],[8,'但是這次地震釋放了多少能量，只有一個數值，叫做規模，不會因為測站位置而不同。'],[11,'目前還無法準確預測地震，所以要事先準備；地震來時先趴下、掩護、穩住。']],
+tick(t){let h='<g clip-path="url(#cG)">';if(t>=2)for(let k=0;k<4;k++){const r=((t-2)*55+k*110)%440;h+=`<circle cx="330" cy="262" r="${n1(r)}" fill="none" stroke="${C.P}" stroke-width="3" opacity="${n1(cl(1-r/440)*100)/100}"/>`;}
+ h+='</g>'+dot(330,262,9,C.P,1,'stroke="#fff" stroke-width="2"')+dot(330,150,6,C.P);
+ [[330,7,'震度 5 強',4],[530,3.5,'震度 4 級',5.6],[710,1.2,'震度 2 級',7.4]].forEach(([x,A,l,ta])=>{const on=t>=ta;h+=house(x,on&&t<13.5?A*Math.sin(t*26):0)+(on?T(x,x===330?64:92,l,{w:700,z:15,f:C.E}):'');});
+ return h;},
+points:['岩層最先斷裂錯動而引發地震的位置稱為<b>震源</b>；從震源垂直延伸到地表的地點稱為<b>震央</b>；兩者的距離稱為<b>震源深度</b>。','<b>地震規模</b>：代表震源釋放<b>能量</b>的多寡（例如芮氏規模）；一次地震<b>只有一個</b>數值，是含小數點、沒有單位的數。','<b>震度</b>（地震強度）：人體感受搖晃或建築物受破壞的程度；各地不同，一般距離震央越遠，震度越<b>小</b>。','中央氣象署將震度分為 <b>0～7 級共十個</b>等級（5 級和 6 級各分強、弱）。','目前的科學仍<b>無法</b>準確預測地震的時間、地點或規模，所以事先防備很重要。','地震發生時要保護頭部、頸部，採取<b>趴下、掩護、穩住</b>。'],
+rhyme:'規模看能量，只有一個；震度看搖晃，各地不同。'});
+
+/* ---------- 12 給你的一段話 ---------- */
+const MSG=[['板塊每年只移動幾公分','可是一直走，就推出了中央山脈。',C.K],['岩層是一層一層堆上去的','今天學的這一層，是明天那一層的地基。','#8c6f4a'],['受擠壓的地方，隆起成山','有壓力的地方，也是你長高的地方。',C.P],['岩層會把經過記下來','你做過的努力都留在你身上，不會白費。',C.U]];
+S.push({unit:3,title:'給你的一段話',dur:16,loop:false,svg:`${RC(440,300,350,70,C.asth)}${T(615,412,'每年幾公分，累積成高山',{z:14,f:C.mut})}`,
+caps:[[0,'這一章學的地球原理，也可以拿來看自己的學習。'],[1,'板塊走得很慢，慢到感覺不出來。'],[5,'山不是一天長出來的，是一層一層疊出來的。'],[9,'推擠的力量越大，山隆起得越高。'],[13,'發生過的事，岩層都記得。'],[15,'臺灣島到現在還在長高，你也是。加油！']],
+tick(t){const g=sg(t,.5,14.5),H=175*g,xl=540+40*g,xr=690-40*g;let h=RC(440,300,xl-440,44,C.cont)+RC(xr,300,790-xr,44,C.cont);
+ [[1,LY[3]],[.72,LY[2]],[.46,LY[1]],[.22,LY[0]]].forEach(([k,c])=>{const w=(xr-xl)/2+50;h+=poly([[615-w*k,300],[615-w*k*.45,300-H*k*.7],[615,300-H*k],[615+w*k*.5,300-H*k*.6],[615+w*k,300]],c,'stroke="#6b5a3a" stroke-width="1"');});
+ h+=AR(455,280,515,280)+AR(775,280,715,280)+T(615,300-H-14,g>=1?'山頂':'',{w:700,z:15});
+ MSG.forEach(([ti,l,c],i)=>{const o=t>=15.9?1:sg(t,1+4*i,1.8+4*i),yy=64+88*i;h+=`<g opacity="${n1(o*100)/100}">`+RC(20,yy-22,5,56,c)+T(36,yy,ti,{a:'start',w:700,z:18,f:c})+T(36,yy+27,l,{a:'start',z:14})+'</g>';});
+ h+=T(215,426,'臺灣島到現在還在長高，你也是。加油！',{w:700,z:17,o:t>=15.9?1:sg(t,15,15.6)});
+ return h;},
+points:['<b>板塊</b>每年只移動幾公分，可是一直走，就推出了中央山脈：每天一點點，時間會幫你堆成高山。','<b>沉積岩層</b>一層一層堆上去：今天學的這一層，是明天那一層的地基。','<b>造山運動</b>：受擠壓的地方隆起成山。有壓力的地方，也是你長高的地方。','<b>岩層</b>會把經過記下來：你做過的努力都留在你身上，不會白費。','<b>韋格納</b>提出大陸漂移時沒有人相信，後來卻成為板塊構造學說的基石：一時沒被看見，不代表沒有價值。','<b>臺灣島</b>到現在還在持續抬升，你也是。'],
+rhyme:'每年幾公分，也能長成山；一層一層堆，都不會白費。'});
+</script>
+
+<script>
+/* ---------- 播放器 ---------- */
+(function(){
+const $=id=>document.getElementById(id);
+const stat=$('stat'),dyn=$('dyn'),cap=$('cap'),play=$('play'),seek=$('seek'),next=$('next'),prev=$('prev'),notes=$('notes');
+let i=0,t=0,playing=false,last=0,reciting=false;const seen=new Set();
+try{const v=parseInt(localStorage.getItem('plate-stage'),10);if(v>=0&&v<S.length)i=v;}catch(e){}
+
+S.forEach((s,k)=>{
+  if(k>0&&s.unit!==S[k-1].unit){const g=document.createElement('li');g.className='gap';g.setAttribute('aria-hidden','true');$('steps').appendChild(g);}
+  const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.textContent=k+1;b.title=s.title;b.setAttribute('aria-label','階段 '+(k+1)+'：'+s.title);
+  b.addEventListener('click',()=>go(k));li.appendChild(b);$('steps').appendChild(li);s.btn=b;});
+UNITS.forEach((u,k)=>{const b=document.createElement('button');b.type='button';b.textContent=u;b.addEventListener('click',()=>go(S.findIndex(s=>s.unit===k)));$('units').appendChild(b);});
+
+function local(){const s=S[i];return s.loop?t%s.dur:Math.min(t,s.dur);}
+function draw(){const s=S[i],lt=local();dyn.innerHTML=s.tick(lt);
+  let c=s.caps[0][1];for(const[a,txt]of s.caps)if(lt>=a)c=txt;if(cap.textContent!==c)cap.textContent=c;
+  seek.value=Math.round(lt/s.dur*1000);}
+function ui(){const s=S[i],end=!s.loop&&t>=s.dur;
+  play.textContent=playing?'⏸ 暫停':end?'↺ 再看一次':t>0?'▶ 繼續':'▶ 開始';
+  next.classList.toggle('ready',seen.has(i)&&i<S.length-1);next.disabled=i===S.length-1;prev.disabled=i===0;
+  S.forEach((x,k)=>{x.btn.classList.toggle('seen',seen.has(k));x.btn.setAttribute('aria-current',k===i?'true':'false');});
+  [...$('units').children].forEach((b,k)=>b.setAttribute('aria-current',k===s.unit?'true':'false'));
+  $('hint').textContent=reciting?'點一下空格就能看答案。先在心裡說出答案，再點開核對。':seen.has(i)?(i<S.length-1?'看完了。試著不看筆記說一次重點，再按「下一階段」。':'全部看完了。開啟背誦模式，從第 1 階段再檢查一次自己。'):'按「開始」看動畫，隨時可以暫停或拖動進度條重看。';}
+function go(k){i=cl(k,0,S.length-1);t=0;playing=false;const s=S[i];
+  stat.innerHTML=s.svg;$('num').textContent=UNITS[s.unit]+'・階段 '+(i+1)+'／'+S.length;$('title').textContent=s.title;
+  $('points').innerHTML=s.points.map(p=>'<li>'+p.replace(/<b>/g,'<b class="k" tabindex="0">')+'</li>').join('');$('rhyme').textContent=s.rhyme;
+  try{localStorage.setItem('plate-stage',i);}catch(e){}
+  draw();ui();}
+function frame(now){if(!playing)return;t+=Math.min(.1,(now-last)/1000);last=now;const s=S[i];
+  if(t>=s.dur&&!seen.has(i)){seen.add(i);ui();}
+  if(!s.loop&&t>=s.dur){t=s.dur;playing=false;ui();}
+  draw();if(playing)requestAnimationFrame(frame);}
+function toggle(){const s=S[i];if(playing){playing=false;}else{if(!s.loop&&t>=s.dur)t=0;playing=true;last=performance.now();requestAnimationFrame(frame);}ui();}
+
+play.addEventListener('click',toggle);
+$('replay').addEventListener('click',()=>{t=0;draw();if(!playing)toggle();});
+seek.addEventListener('input',()=>{playing=false;t=seek.value/1000*S[i].dur;draw();ui();});
+next.addEventListener('click',()=>go(i+1));prev.addEventListener('click',()=>go(i-1));
+$('recite').addEventListener('click',e=>{reciting=!reciting;notes.classList.toggle('reciting',reciting);e.currentTarget.setAttribute('aria-pressed',reciting);e.currentTarget.textContent=reciting?'顯示全部關鍵字':'背誦模式：遮住關鍵字';notes.querySelectorAll('.k.open').forEach(k=>k.classList.remove('open'));ui();});
+$('points').addEventListener('click',e=>{const k=e.target.closest('.k');if(k&&reciting)k.classList.toggle('open');});
+$('points').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('k')&&reciting){e.preventDefault();e.target.classList.toggle('open');}});
+document.addEventListener('keydown',e=>{if(e.target.closest('button,input,.k'))return;if(e.key===' '){e.preventDefault();toggle();}else if(e.key==='ArrowRight')go(i+1);else if(e.key==='ArrowLeft')go(i-1);});
+go(i);
+})();
+</script>
+</body>
+</html>
