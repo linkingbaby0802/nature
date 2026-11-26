@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>功與能 教學動畫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 版面：左邊是動畫舞台與播放控制，右邊是可遮字背誦的重點筆記；窄螢幕時上下堆疊 */
+  --paper:#f0f1f4; --card:#ffffff; --ink:#1b2230; --muted:#5a6475; --line:#d5d9e2;
+  --accent:#a8323f; --accent-soft:#f6dfe2; --memo:#fff4cc;
+  --display:"Noto Serif TC","Songti TC","PMingLiU",serif;
+  --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;padding:18px 20px 12px;max-width:1280px;margin:0 auto}
+.eyebrow{font-size:13px;color:var(--muted);letter-spacing:.08em}
+h1{font-family:var(--display);font-size:26px;margin:0;line-height:1.25}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+button{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,input:focus-visible,.k:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.45;cursor:default}
+nav button[aria-current="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px;padding:0 20px 28px;max-width:1280px;margin:0 auto;align-items:start}
+.stage,.notes{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stagehead{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;margin-bottom:8px}
+#num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:.06em}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+svg#svg{display:block;width:100%;height:auto;background:#fafbfc;border:1px solid var(--line);border-radius:12px}
+svg text{font-family:var(--body)}
+.cap{min-height:3.2em;margin:10px 2px 8px;font-size:17px;font-weight:500}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700;min-width:116px;padding:10px 16px}
+.primary:hover{filter:brightness(1.08)}
+#seek{flex:1 1 160px;accent-color:var(--accent);min-width:120px}
+.nav{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+#steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0;justify-content:center;flex:1 1 200px}
+#steps button{width:30px;height:30px;padding:0;border-radius:50%;font-size:13px;font-variant-numeric:tabular-nums}
+#steps button.seen{background:var(--accent-soft);border-color:var(--accent)}
+#steps button[aria-current="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+#steps li.gap{width:8px}
+#next.ready{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.noteshead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+h3{font-family:var(--display);font-size:19px;margin:0}
+#recite[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+#points{margin:12px 0;padding-left:1.2em;display:flex;flex-direction:column;gap:9px}
+.k{font-weight:700;color:var(--accent);border-radius:4px;padding:0 2px}
+.reciting .k{color:transparent;background:var(--accent-soft);border-bottom:2px solid var(--accent);cursor:pointer;user-select:none}
+.reciting .k.open{color:var(--accent);background:none;border-bottom-color:transparent}
+.rhyme{background:var(--memo);border-radius:12px;padding:10px 14px}
+.rhyme span{font-size:12px;font-weight:700;letter-spacing:.1em;color:#7a5a00}
+.rhyme p{margin:2px 0 0;font-family:var(--display);font-size:19px;line-height:1.5}
+.hint{font-size:14px;color:var(--muted);margin:12px 2px 0}
+@media (max-width:860px){main{grid-template-columns:1fr}h1{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="eyebrow">國中自然 3 上・第 3 章</div><h1>功與能</h1></div>
+  <nav id="units" aria-label="單元"></nav>
+</header>
+<main>
+  <section class="stage" aria-label="動畫">
+    <div class="stagehead"><span id="num"></span><h2 id="title"></h2></div>
+    <svg id="svg" viewBox="0 0 800 450" role="img" aria-labelledby="title">
+      <defs>
+        <marker id="ahR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d43d3d"/></marker>
+        <marker id="ahB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4a63c9"/></marker>
+        <marker id="ahK" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#56665e"/></marker>
+        <linearGradient id="gcap" gradientUnits="userSpaceOnUse" x1="270" x2="530" y1="0" y2="0"><stop offset="0" stop-color="#e86a5e"/><stop offset="1" stop-color="#7f8fe0"/></linearGradient>
+        <linearGradient id="gcap2" gradientUnits="userSpaceOnUse" x1="40" x2="520" y1="0" y2="0"><stop offset="0" stop-color="#f08a80"/><stop offset="1" stop-color="#a9b4ea"/></linearGradient>
+      </defs>
+      <g id="stat"></g><g id="dyn"></g>
+    </svg>
+    <p class="cap" id="cap" aria-live="polite"></p>
+    <div class="controls">
+      <button id="play" class="primary" type="button">▶ 開始</button>
+      <button id="replay" type="button">↺ 從頭播放</button>
+      <input type="range" id="seek" min="0" max="1000" value="0" aria-label="動畫進度">
+    </div>
+    <div class="nav">
+      <button id="prev" type="button">← 上一階段</button>
+      <ol id="steps" aria-label="階段"></ol>
+      <button id="next" type="button">下一階段 →</button>
+    </div>
+  </section>
+  <aside class="notes" id="notes" aria-label="重點歸納">
+    <div class="noteshead"><h3>重點歸納</h3><button id="recite" type="button" aria-pressed="false">背誦模式：遮住關鍵字</button></div>
+    <ul id="points"></ul>
+    <div class="rhyme"><span>背誦口訣</span><p id="rhyme"></p></div>
+    <p class="hint" id="hint"></p>
+  </aside>
+</main>
+
+<script id="stages">
+/* ---------- 繪圖小工具（只回傳 SVG 字串，不碰 DOM） ---------- */
+const C={ink:'#1b2230',mut:'#56665e',F:'#d43d3d',S:'#4a63c9',K:'#e08a1e',U:'#2f9e6b',E:'#7a4fc7',box:'#8a97b5',line:'#c9ced8'};
+const cl=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const sg=(t,a,b)=>cl((t-a)/(b-a));
+const lerp=(a,b,p)=>a+(b-a)*p;
+const n1=n=>(Math.round(n*10)/10);
+const PI=Math.PI,RAD=PI/180;
+const dot=(x,y,r,fill,o=1,ex='')=>`<circle cx="${n1(x)}" cy="${n1(y)}" r="${n1(Math.max(0,r))}" fill="${fill}" opacity="${n1(o*100)/100}" ${ex}/>`;
+const T=(x,y,s,o={})=>`<text x="${n1(x)}" y="${n1(y)}" text-anchor="${o.a||'middle'}" font-size="${o.z||17}" font-weight="${o.w||500}" fill="${o.f||C.ink}" opacity="${n1((o.o??1)*100)/100}">${s}</text>`;
+const AR=(x1,y1,x2,y2,c='R',w=4,o=1)=>`<line x1="${n1(x1)}" y1="${n1(y1)}" x2="${n1(x2)}" y2="${n1(y2)}" stroke="${{R:C.F,B:C.S,K:C.mut}[c]}" stroke-width="${w}" marker-end="url(#ah${c})" opacity="${o}"/>`;
+const RC=(x,y,w,h,fill,ex='')=>`<rect x="${n1(x)}" y="${n1(y)}" width="${n1(Math.max(0,w))}" height="${n1(Math.max(0,h))}" fill="${fill}" ${ex}/>`;
+const along=(pts,s)=>{for(let i=1;i<pts.length;i++){const[ax,ay]=pts[i-1],[bx,by]=pts[i],d=Math.hypot(bx-ax,by-ay);if(s<=d||i===pts.length-1){const p=d?cl(s/d):0;return[ax+(bx-ax)*p,ay+(by-ay)*p];}s-=d;}};
+const plen=pts=>pts.slice(1).reduce((a,p,i)=>a+Math.hypot(p[0]-pts[i][0],p[1]-pts[i][1]),0);
+const panels=`${[15,280,545].map(x=>`<rect x="${x}" y="50" width="240" height="270" rx="16" fill="#fff" stroke="#d5d9e2"/>`).join('')}`;
+
+const UNITS=['功與功率','能量','力矩與槓桿','簡單機械','給你的話'];
+const S=[];
+
+/* ---------- 1 功 ---------- */
+const bag=(x,y)=>RC(x,y,36,40,C.box,'rx="6"')+`<path d="M${n1(x+9)} ${n1(y)}v-9h18v9" fill="none" stroke="${C.ink}" stroke-width="3"/>`;
+S.push({unit:0,title:'功：力有沒有「作功」',dur:16,loop:false,svg:panels+
+`${T(400,30,'功 W ＝ 作用力 F × 沿力方向的位移 S　　單位：焦耳（J）',{w:700,z:17})}
+${T(135,350,'力與位移同向',{w:700,z:18})}${T(135,376,'作正功（W ＞ 0）',{z:16,f:C.F})}
+${T(400,350,'沒有位移（S ＝ 0）',{w:700,z:18})}${T(400,376,'作功為零',{z:16,f:C.mut})}
+${T(665,350,'力與位移垂直',{w:700,z:18})}${T(665,376,'作功為零',{z:16,f:C.mut})}
+${T(400,418,'力與位移反向時作負功：例如把書包提起時，重力對書包作負功',{z:14,f:C.mut})}`,
+caps:[[0,'施了力，不一定有作功。用提書包的三種情況來看。'],[1,'把書包往上提：施力向上，位移也向上，方向相同，手對書包作正功。'],[5,'提著書包站著不動：有施力，但位移是零，所以作功為零。'],[10,'提著書包水平等速往前走：施力向上，位移向前，兩者垂直，作功也是零。'],[15,'要作功，必須有力、有位移，而且位移要沿著力的方向。']],
+tick(t){const a=t<.01||t>=15?-1:Math.floor(t/5),op=i=>a<0||a===i?1:.35;let h='';
+ const p=sg(t,1,4),by=230-80*p;
+ h+=`<g opacity="${op(0)}">`+bag(102,by)+AR(120,by-12,120,by-58)+T(134,by-40,'F',{a:'start',f:C.F,w:700})+AR(120,by+44,120,by+70,'K',3)+T(134,by+66,'重力',{a:'start',z:12,f:C.mut})+(p>.05?AR(200,270,200,270-80*p,'B')+T(212,275-40*p,'S',{a:'start',f:C.S,w:700}):'')+'</g>';
+ h+=`<g opacity="${op(1)}">`+bag(382,190)+AR(400,178,400,132)+T(414,150,'F',{a:'start',f:C.F,w:700})+T(400,275,'站著不動',{z:14,f:C.mut})+'</g>';
+ const q=sg(t,11,14),bx=575+120*q;
+ h+=`<g opacity="${op(2)}">`+bag(bx,170)+AR(bx+18,158,bx+18,112)+T(bx+32,130,'F',{a:'start',f:C.F,w:700})+(q>.05?AR(593,250,593+120*q,250,'B')+T(593+60*q,274,'S',{f:C.S,w:700}):'')+T(665,300,'水平等速前進',{z:13,f:C.mut})+'</g>';
+ return h;},
+points:['功 W ＝ <b>作用力 F</b> × 物體<b>沿作用力方向的位移 S</b>。','功的單位是<b>焦耳（J）</b>，也就是牛頓・公尺（N・m）。','力與位移<b>同向</b>：作<b>正</b>功；力與位移<b>反向</b>：作<b>負</b>功。','物體<b>沒有位移</b>，作功為<b>零</b>；力與位移<b>垂直</b>，作功也為<b>零</b>。','功沒有方向性；功的正、負表示受力者的能量<b>增加</b>或<b>減少</b>。'],
+rhyme:'同向正、反向負、垂直零、不動也是零。'});
+
+/* ---------- 2 功率 ---------- */
+S.push({unit:0,title:'功率：作功的快慢',dur:12,loop:false,svg:
+`<line x1="60" y1="380" x2="740" y2="380" stroke="${C.line}" stroke-width="4"/><line x1="100" y1="140" x2="700" y2="140" stroke="${C.S}" stroke-dasharray="6 6"/>${T(706,145,'相同高度',{a:'start',z:13,f:C.S})}
+${T(400,414,'兩臺吊車作的功相同（施力、位移都相同），但花的時間不同',{z:15})}${T(400,440,'功率 P ＝ 功 W ÷ 時間 t　　單位：瓦特（W），1000 瓦特 ＝ 1 瓩（kW）',{w:700,z:16})}`,
+caps:[[0,'甲、乙兩臺吊車，要把一樣重的貨物等速吊到一樣的高度。'],[1,'兩臺同時開始。施力相同、位移也相同，所以作的功一樣多。'],[6,'甲只花 5 秒就完成。乙還在吊。'],[11,'乙花了 10 秒。作同樣的功，花的時間越短，功率越大：甲的功率是乙的 2 倍。']],
+tick(t){let h='';[[200,5,'甲吊車'],[520,10,'乙吊車']].forEach(([xc,tt,nm])=>{const p=sg(t,1,1+tt),y=330-190*p;
+  h+=`<path d="M${xc-70} 380V70H${xc+22}" fill="none" stroke="#6b7488" stroke-width="8"/><line x1="${xc}" y1="70" x2="${xc}" y2="${n1(y)}" stroke="${C.ink}" stroke-width="2"/>`+RC(xc-30,y,60,44,C.box,'rx="5"')+T(xc,y+28,'2000 N',{z:13,f:'#fff',w:700});
+  h+=T(xc+100,215,nm,{w:700,z:19})+T(xc+100,257,(p*tt).toFixed(1)+' 秒',{w:700,z:26,f:C.S})+(p>=1?T(xc+100,295,tt===5?'功率較大':'功率較小',{w:700,z:18,f:tt===5?C.F:C.mut}):'');});
+ return h;},
+points:['<b>功率</b>表示作功的<b>快慢</b>。','功率 P ＝ <b>功 W ÷ 作功所用的時間 t</b>。','單位：<b>瓦特（W）</b>；1000 瓦特稱為 1 <b>瓩</b>（kW，讀作千瓦）。','作相同的功，花的時間越<b>短</b>，功率越<b>大</b>。','引擎的功率有時用馬力表示，1 馬力約等於 <b>0.75</b> 瓩。'],
+rhyme:'功看多少，功率看快慢；同樣的功，越快完成功率越大。'});
+
+/* ---------- 3 動能 ---------- */
+S.push({unit:1,title:'動能：運動的物體有能量',dur:15,loop:false,svg:
+`${T(400,318,'動能：物體因運動而具有的能量（單位：焦耳）',{w:700,z:16})}${T(400,352,'質量相同時，動能與「速率平方」成正比：速率 2 倍，動能 4 倍',{z:15})}${T(400,380,'速率相同時，動能與「質量」成正比：質量 2 倍，動能 2 倍',{z:15})}
+${T(400,424,'球撞上彈性網，網子凹得越深，表示球的動能越大',{z:13,f:C.mut})}`,
+caps:[[0,'讓球撞上彈性網，用網子凹陷的深淺來比較動能。'],[1,'比較一：兩顆一樣的球，速率不同。速率大的球，讓網子凹得深很多。'],[7.5,'比較二：速率相同，但質量不同。'],[9,'質量大的球，網子凹得比較深。'],[13.5,'動能和質量、速率都有關，其中速率的影響是「平方」。']],
+tick(t){const part=t<7.5?0:1,tau=Math.max(0,part?t-8.3:t-1),cf=part?[[160,19,52,'質量大'],[160,10,26,'質量小']]:[[240,12,60,'速率大'],[120,12,15,'速率小']];
+ let h=T(400,36,part?'比較二：速率相同，質量不同':'比較一：質量相同，速率不同',{w:700,z:18});
+ cf.forEach(([v,r,dep,l],i)=>{const y=[115,225][i],ta=(480-r)/v,p=sg(tau,ta,ta+.5),x=tau<ta?80+v*tau:560-r+dep*p,d=dep*p;
+  h+=`<line x1="60" y1="${y+r+2}" x2="556" y2="${y+r+2}" stroke="${C.line}" stroke-width="3"/><path d="M560 ${y-42}Q${n1(560+2*d)} ${y} 560 ${y+42}" fill="none" stroke="${C.E}" stroke-width="4"/>`+dot(x,y,r,C.K)+T(66,y-30,l,{a:'start',z:14,w:700});
+  if(tau>0&&tau<ta)h+=AR(x+r+5,y,x+r+5+v/5,y,'B',3);
+  if(p>=1)h+=T(690,y+6,i?'凹陷淺：動能小':'凹陷深：動能大',{w:700,z:15,f:i?C.mut:C.K});});
+ return h;},
+points:['物體因<b>運動</b>而具有的能量，稱為<b>動能</b>。','質量相同時：速率越大，動能越大，而且與<b>速率平方</b>成正比。','速率相同時：質量越大，動能越大，而且與<b>質量</b>成正比。','動能的單位是<b>焦耳</b>。','車速變成 2 倍，動能變成 <b>4</b> 倍，撞擊造成的損壞也更大。'],
+rhyme:'動能看質量和速率；速率加倍，動能變四倍。'});
+
+/* ---------- 4 位能 ---------- */
+S.push({unit:1,title:'位能：重力位能與彈性位能',dur:15,loop:false,svg:
+`${T(205,38,'重力位能',{w:700,z:20,f:C.U})}${T(605,38,'彈性位能',{w:700,z:20,f:C.U})}<line x1="410" y1="20" x2="410" y2="430" stroke="${C.line}" stroke-dasharray="5 6"/>
+<line x1="40" y1="350" x2="380" y2="350" stroke="${C.line}" stroke-width="4"/>${T(60,372,'地面（位能訂為 0）',{a:'start',z:12,f:C.mut})}
+${T(205,402,'增加的重力位能 ＝ 物重 W × 高度差 h',{w:700,z:15})}${T(205,426,'越高、越重，重力位能越大',{z:14,f:C.mut})}
+${RC(428,150,12,112,'#6b7488')}<line x1="440" y1="260" x2="785" y2="260" stroke="${C.line}" stroke-width="4"/>
+${T(605,402,'彈性體因形狀改變而儲存的能量',{w:700,z:15})}${T(605,426,'形變量越大，彈性位能越大',{z:14,f:C.mut})}`,
+caps:[[0,'位能是「儲存起來」的能量。先看重力位能。'],[1,'施力把物體等速往上抬，反抗重力所作的功，會以重力位能的形式存在物體裡。'],[5.5,'再看彈性位能：施力壓縮彈簧，對彈簧作功，能量存進彈簧。'],[10,'放手：彈簧把儲存的彈性位能交給木塊，變成木塊的動能。'],[13,'因為位置的高低，或因為形變而具有的能量，統稱為位能。']],
+tick(t){const p=sg(t,1,5),top=310-160*p;let h=RC(95,top,50,40,C.box,'rx="5"')+T(120,top+26,'W',{w:700,f:'#fff'})+(p<1?AR(120,top-6,120,top-52)+T(134,top-30,'施力',{a:'start',z:13,f:C.F}):'');
+ if(p>.05)h+=`<line x1="178" y1="350" x2="178" y2="${n1(top+40)}" stroke="${C.S}" stroke-width="2" stroke-dasharray="5 4"/>`+T(188,(350+top+40)/2+5,'h',{a:'start',f:C.S,w:700});
+ h+=RC(285,350-170*p,44,170*p,C.U)+T(307,342-170*p,'重力位能',{z:13,f:C.U});
+ const c=t<6?0:t<10?sg(t,6,8.5):1-sg(t,10,10.2),rel=t>=10.2,xb=rel?Math.min(735,580+(t-10.2)*300):580-80*c,se=Math.min(xb,580);
+ let d='M440 237';for(let i=1;i<=16;i++)d+='L'+n1(440+(se-440)*i/16)+' '+(i===16?237:237+(i%2?-13:13));
+ h+=`<path d="${d}" fill="none" stroke="${C.ink}" stroke-width="3"/>`+RC(xb,215,44,45,C.box,'rx="5"');
+ if(t>=6&&t<10)h+=AR(xb+96,237,xb+50,237)+T(xb+100,242,'施力',{a:'start',z:13,f:C.F});
+ if(rel&&xb<735)h+=AR(xb+50,237,xb+96,237,'B');
+ const k=rel?sg(t,10,10.2):0;
+ h+=T(470,112,'彈性位能',{a:'start',z:13,f:C.U})+RC(550,100,170*c,15,C.U)+T(470,140,'動能',{a:'start',z:13,f:C.K})+RC(550,128,170*k,15,C.K);
+ return h;},
+points:['把物體抬高，反抗重力所作的功會儲存成<b>重力位能</b>。','增加的重力位能 ＝ <b>物重 × 高度差</b>；與<b>質量</b>成正比，也與<b>高度差</b>成正比。','水平搬運時高度不變，重力位能<b>不變</b>。','<b>彈性位能</b>：彈性體（橡皮筋、彈簧）因<b>形狀改變</b>而儲存的能量；形變量越<b>大</b>，彈性位能越大。','因位置高低或形變而具有的能量，統稱為<b>位能</b>；單位也是<b>焦耳</b>。'],
+rhyme:'越高越重，重力位能越大；形變越大，彈性位能越大。'});
+
+/* ---------- 5 力學能守恆 ---------- */
+S.push({unit:1,title:'力學能守恆：單擺',dur:12,loop:true,svg:
+`<path d="M123.8 207.8A230 230 0 0 0 476.2 207.8" fill="none" stroke="${C.line}" stroke-width="2" stroke-dasharray="5 6"/>${RC(250,48,100,10,'#6b7488')}
+${T(98,204,'A',{w:700})}${T(502,204,'E',{w:700})}${T(300,332,'C（最低點，位能訂為 0）',{z:13,f:C.mut})}
+${T(620,58,'力學能 E ＝ 動能 K ＋ 位能 U ＝ 定值',{w:700,z:15})}${T(620,82,'（不計摩擦力與空氣阻力）',{z:12,f:C.mut})}
+<line x1="530" y1="330" x2="710" y2="330" stroke="${C.ink}" stroke-width="2"/>${T(560,352,'動能 K',{z:13,f:C.K})}${T(620,352,'位能 U',{z:13,f:C.U})}${T(680,352,'力學能 E',{z:13,f:C.E})}`,
+caps:[[0,'擺錘從左邊最高點 A 由靜止釋放。看右邊三根長條怎麼變。'],[1,'往下擺：高度降低，位能減少，轉換成動能，速率變快。到最低點 C 時動能最大。'],[2,'往上擺：動能減少，轉換成位能。到最高點 E 時速率是 0，位能最大。'],[4,'來回擺動的過程中，動能和位能一個變多、一個變少，但總和（力學能）始終不變。']],
+tick(t){const th=50*RAD*Math.cos(2*PI*t/4),bx=300-230*Math.sin(th),by=60+230*Math.cos(th),u=(1-Math.cos(th))/(1-Math.cos(50*RAD)),k=1-u,a=Math.abs(th)/RAD;
+ let h=`<line x1="300" y1="58" x2="${n1(bx)}" y2="${n1(by)}" stroke="${C.ink}" stroke-width="3"/>`+dot(bx,by,17,C.F);
+ h+=RC(540,330-200*k,40,200*k,C.K)+RC(600,330-200*u,40,200*u,C.U)+RC(660,130,40,200,C.E);
+ const st=a>46?'最高點：速率 0，位能最大，動能 0':a<7?'最低點：速率最大，動能最大，位能 0':Math.sin(PI*t)>0?'下降中：位能 → 動能':'上升中：動能 → 位能';
+ h+=T(400,408,st,{w:700,z:19});return h;},
+points:['功和能可以互相轉換：施力作功可使物體的能量改變，有能量的物體也可以作功。','動能與位能的總和稱為<b>力學能</b>：E ＝ <b>K ＋ U</b>。','物體只受<b>重力或彈力</b>作用（其他力作功為零）時，力學能<b>保持不變</b>，稱為<b>力學能守恆</b>。','單擺在最高點：位能<b>最大</b>、動能為<b>零</b>；在最低點：動能<b>最大</b>、速率最快。','下降時<b>位能轉換成動能</b>；上升時<b>動能轉換成位能</b>。'],
+rhyme:'高處位能大，低處動能大；一個變多、一個變少，總和不變。'});
+
+/* ---------- 6 能量守恆 ---------- */
+const WPp=[[240,110],[300,110],[400,290]],WPl=plen(WPp),WR=[[462,300],[640,300],[640,206]],WRl=plen(WR);
+S.push({unit:1,title:'能量的轉換與能量守恆',dur:14,loop:false,svg:
+`<path d="M20 130H250V330H20Z" fill="#cdbb9c"/>${RC(30,74,216,56,'#6db0f0')}${T(138,60,'水庫（高處的水）',{z:14})}
+<path d="M240 110H300L400 290" fill="none" stroke="#a9bfdc" stroke-width="20" stroke-linejoin="round"/>${T(430,352,'發電機',{z:13})}${T(690,186,'電燈',{a:'start',z:13})}
+<path d="M462 300H640V206" fill="none" stroke="#6b7488" stroke-width="3"/>
+<path d="M168 397H222M358 397H412M548 397H602" stroke="${C.mut}" stroke-width="3" marker-end="url(#ahK)"/>
+${T(400,444,'能量守恆：能量可以轉換形式，但總和不變',{w:700,z:15})}`,
+caps:[[0,'能量有很多形式，而且可以互相轉換。以水力發電為例。'],[1,'高處的水有重力位能。'],[4,'水往下流，位能轉換成動能。'],[7,'流動的水推動發電機，動能轉換成電能。'],[10,'電能送到家裡的電燈，轉換成光能和熱能。能量沒有變多，也沒有消失。']],
+tick(t){let h='';const on=[1,4,7,10].map(v=>t>=v),cur=on.lastIndexOf(true);
+ for(let i=0;i<6;i++){const[x,y]=along(WPp,((t*.45+i/6)%1)*WPl);h+=dot(x,y,6,'#2b7bd6',on[1]?1:.25);}
+ const ang=on[1]?t*220:0;h+=dot(430,300,30,'#dfe3ec',1,`stroke="${C.ink}" stroke-width="3"`)+`<path d="M400 300H460M430 270V330" stroke="${C.ink}" stroke-width="4" transform="rotate(${n1(ang)} 430 300)"/>`;
+ if(on[2])for(let i=0;i<5;i++){const[x,y]=along(WR,((t*.6+i/5)%1)*WRl);h+=dot(x,y,5,'#f2b705');}
+ const g=sg(t,10,11);h+=dot(640,180,34+8*g,'#f6c545',.25*g)+dot(640,180,24,'#f6c545',.25+.75*g,`stroke="${C.ink}" stroke-width="2"`);
+ [['位能','高處的水'],['動能','流動的水'],['電能','發電機'],['光能＋熱能','電燈']].forEach(([n,s],k)=>{const x=20+190*k,a=cur===k,d=on[k];
+  h+=RC(x,370,146,54,a?[C.U,C.K,'#f2b705',C.F][k]:'#fff',`rx="12" stroke="${d?C.ink:'#d5d9e2'}" stroke-width="2"`)+T(x+73,393,n,{w:700,z:17,f:a?'#fff':d?C.ink:C.mut})+T(x+73,414,s,{z:12,f:a?'#fff':C.mut});});
+ return h;},
+points:['能量有很多形式：動能、位能、<b>熱能、光能、電能、化學能</b>等，可以互相<b>轉換</b>。','水力發電：水的<b>位能</b> → <b>動能</b> → <b>電能</b>；電燈再把電能轉換成<b>光能和熱能</b>。','呼吸作用：化學能 → <b>熱能</b>；光合作用：<b>光能</b> → 化學能。','<b>能量守恆定律</b>：能量轉換的過程中，能量的總和<b>保持不變</b>。','能量不能<b>無中生有</b>，也不會<b>憑空消失</b>。'],
+rhyme:'能量只會換形式，不會變多，也不會消失。'});
+
+/* ---------- 7 力矩 ---------- */
+const MT=[['施力點離支點遠','力臂大，力矩大','容易轉動'],['施力點離支點近','力臂小，力矩小','不容易轉動'],['施力方向不垂直','力臂變小','力矩變小，較難轉動']];
+S.push({unit:2,title:'力矩：讓物體轉動的效果',dur:16,loop:false,svg:
+`${T(400,36,'力矩 L ＝ 施力 F × 力臂 d　　力臂：支點到力作用線的垂直距離',{w:700,z:16})}${T(140,200,'支點（轉軸）',{z:13,f:C.mut})}${T(60,436,'從上方往下看一扇門',{a:'start',z:13,f:C.mut})}`,
+caps:[[0,'開門時，用同樣大小的力，推不同的位置、不同的方向，效果不一樣。'],[1,'推離轉軸最遠的地方，而且垂直門板：力臂最大，門很容易轉動。'],[5,'改推靠近轉軸的地方：力臂變小，力矩變小，門很難推動。'],[10,'回到最遠處，但斜著推：力臂要量支點到「力作用線」的垂直距離，所以變小了。'],[15,'如果施力方向剛好通過支點，力臂是零，門完全不會轉。']],
+tick(t){const k=Math.min(2,Math.floor(t/5)),tau=t-5*k,phi=[22,5,11][k]*sg(tau,1.5,4.5);
+ let g=RC(140,222,400,16,'#b98b5e','rx="4"');
+ if(k===0)g+=AR(520,146,520,216)+T(534,170,'F',{a:'start',f:C.F,w:700})+`<path d="M140 262H520M140 254V270M520 254V270" stroke="${C.S}" stroke-width="3" fill="none"/>`+T(330,286,'力臂 d（大）',{f:C.S,w:700});
+ if(k===1)g+=AR(220,146,220,216)+T(234,170,'F',{a:'start',f:C.F,w:700})+`<path d="M140 262H220M140 254V270M220 254V270" stroke="${C.S}" stroke-width="3" fill="none"/>`+T(180,292,'力臂 d（小）',{f:C.S,w:700});
+ if(k===2)g+=AR(582,194,524,227.5)+T(590,190,'F',{a:'start',f:C.F,w:700})+`<line x1="520" y1="230" x2="218" y2="404.5" stroke="${C.F}" stroke-width="1.5" stroke-dasharray="5 5"/><line x1="140" y1="230" x2="235" y2="394.5" stroke="${C.S}" stroke-width="3"/>`+T(170,330,'力臂 d',{a:'end',f:C.S,w:700})+T(462,256,'30°',{z:13})+T(330,382,'力作用線',{z:12,f:C.F});
+ let h=`<g transform="rotate(${n1(phi)} 140 230)">${g}</g>`+dot(140,230,9,C.ink);
+ h+=T(680,96,MT[k][0],{w:700,z:17})+T(680,124,MT[k][1],{z:15,f:C.S})+T(680,150,MT[k][2],{z:15});
+ return h;},
+points:['力可以使物體<b>轉動</b>；物體轉動時繞著的固定點或轉軸稱為<b>支點</b>。','<b>力臂</b>：支點到<b>力作用線</b>的<b>垂直距離</b>。','<b>力矩</b> L ＝ <b>施力 F × 力臂 d</b>；力矩越大，越容易使物體轉動。','施力點離支點越<b>遠</b>，力臂越大；施力方向與物體<b>垂直</b>時力臂最大；施力方向通過支點時力臂為<b>零</b>。','力矩有<b>順時鐘</b>和<b>逆時鐘</b>兩種方向；方向相同時合力矩相<b>加</b>，方向相反時相<b>減</b>。','力矩單位（N・m、kgw・m）和功的單位寫法相同，但是<b>不同</b>的物理量。'],
+rhyme:'力矩＝力×力臂；力臂要量垂直距離；離支點遠、垂直施力，最容易轉動。'});
+
+/* ---------- 8 槓桿原理 ---------- */
+S.push({unit:2,title:'槓桿原理與靜力平衡',dur:14,loop:false,svg:
+`<path d="M400 293L378 345H422Z" fill="#6b7488"/><line x1="100" y1="345" x2="700" y2="345" stroke="${C.line}" stroke-width="4"/>${T(400,366,'支點',{z:13,f:C.mut})}
+${T(200,72,'逆時鐘方向的力矩',{z:14,f:C.mut})}${T(600,72,'順時鐘方向的力矩',{z:14,f:C.mut})}
+${T(400,406,'槓桿原理：施力 × 施力臂 ＝ 抗力 × 抗力臂',{w:700,z:17})}${T(400,432,'重的人坐近一點，輕的人坐遠一點，蹺蹺板就能平衡',{z:14,f:C.mut})}`,
+caps:[[0,'槓桿左邊掛 80 公克重，右邊掛 40 公克重，兩邊離支點一樣遠。'],[1,'左邊的力矩比較大，槓桿往左邊（逆時鐘）轉。'],[5,'把右邊比較輕的砝碼往外移，它的力臂變長，力矩跟著變大。'],[9,'移到 18 公分時，兩邊力矩大小相等，合力矩為零，槓桿平衡了。'],[11.5,'物體不移動（合力為零）而且不轉動（合力矩為零），就是靜力平衡。']],
+tick(t){const dR=9+9*sg(t,5,8.5),tilt=-11*(1-(dR-9)/9)*sg(t,.8,2.2),xr=400+dR*13,bal=dR>=17.99;
+ let g=RC(110,279,580,12,'#b98b5e','rx="4"');for(let i=-21;i<=21;i+=3)g+=`<line x1="${400+i*13}" y1="279" x2="${400+i*13}" y2="273" stroke="${C.ink}"/>`;
+ g+=`<line x1="283" y1="291" x2="283" y2="306" stroke="${C.ink}" stroke-width="2"/>`+RC(258,306,50,42,C.box,'rx="5"')+T(283,333,'80',{w:700,f:'#fff'})+`<line x1="${n1(xr)}" y1="291" x2="${n1(xr)}" y2="306" stroke="${C.ink}" stroke-width="2"/>`+RC(xr-18,306,36,30,C.box,'rx="5"')+T(xr,327,'40',{w:700,z:14,f:'#fff'});
+ g+=`<path d="M283 258H400M283 251V265M400 251V265" stroke="${C.S}" stroke-width="2.5" fill="none"/>`+T(341,246,'9 cm',{z:14,f:C.S,w:700})+`<path d="M400 258H${n1(xr)}M${n1(xr)} 251V265" stroke="${C.S}" stroke-width="2.5" fill="none"/>`+T((400+xr)/2,246,dR.toFixed(0)+' cm',{z:14,f:C.S,w:700});
+ let h=`<g transform="rotate(${n1(tilt)} 400 285)">${g}</g>`;
+ h+=T(200,106,'80 × 9 ＝ 720',{w:700,z:22})+T(600,106,`40 × ${dR.toFixed(0)} ＝ ${Math.round(40*Math.round(dR))}`,{w:700,z:22})+T(400,106,bal?'＝':'＞',{w:700,z:30,f:bal?C.U:C.F});
+ if(bal)h+=T(400,150,'合力矩為零：槓桿平衡',{w:700,z:18,f:C.U,o:sg(t,9,9.6)});
+ return h;},
+points:['順時鐘和逆時鐘方向的力矩大小相等時，合力矩為<b>零</b>，槓桿達到平衡。','<b>槓桿原理</b>：<b>施力 × 施力臂 ＝ 抗力 × 抗力臂</b>。','蹺蹺板：體重較重的人要坐離支點較<b>近</b>，較輕的人坐離支點較<b>遠</b>。','<b>靜力平衡</b>：物體不移動，所受<b>合力</b>為零；物體不轉動，所受<b>合力矩</b>也為零。','等臂天平運用槓桿原理：兩邊力臂相等，平衡時兩邊物體的<b>質量</b>相等。'],
+rhyme:'重的靠近、輕的坐遠；合力為零不移動，合力矩為零不轉動。'});
+
+/* ---------- 9 三種槓桿 ---------- */
+S.push({unit:3,title:'槓桿的三種類型',dur:15,loop:false,svg:panels+
+`${T(135,346,'支點在中間',{w:700,z:18})}${T(135,372,'看力臂長短：可省力，也可省時',{z:13})}${T(135,394,'拔釘器（省力）、裁縫剪刀（費力）',{z:12,f:C.mut})}${T(135,414,'等臂天平（力臂相等）',{z:12,f:C.mut})}
+${T(400,346,'抗力點在中間',{w:700,z:18})}${T(400,372,'施力臂 ＞ 抗力臂：省力、費時',{z:13,f:C.U})}${T(400,394,'行李箱、裁紙刀',{z:12,f:C.mut})}
+${T(665,346,'施力點在中間',{w:700,z:18})}${T(665,372,'施力臂 ＜ 抗力臂：費力、省時',{z:13,f:C.F})}${T(665,394,'掃把、麵包夾',{z:12,f:C.mut})}
+${T(400,440,'紅色箭頭是施力，灰色方塊是抗力（重物），三角形是支點',{z:13,f:C.mut})}`,
+caps:[[0,'槓桿依支點、施力點、抗力點的位置，分成三種。'],[1,'支點在中間：省力還是費力，要看施力臂和抗力臂哪個長。'],[5,'抗力點在中間：施力臂一定比抗力臂長，所以省力，但施力要移動比較長的距離。'],[10,'施力點在中間：施力臂一定比抗力臂短，所以費力，但抗力點移動的距離大，比較省時。']],
+tick(t){const a=t<.01||t>=15?-1:Math.floor(t/5),tau=t-5*Math.max(0,a);let h='';
+ [0,1,2].forEach(i=>{const x0=15+265*i,act=a===i,s=act?.5-.5*Math.cos(2*PI*tau/2.5):0,px=i?x0+30:x0+95,ang=(i?-7:7)*s;
+  let g=RC(x0+25,184,190,12,'#b98b5e','rx="4"');
+  if(i===0)g+=RC(x0+24,148,36,36,C.box,'rx="5"')+T(x0+42,140,'抗力',{z:12,f:C.mut})+AR(x0+205,126,205+x0,180)+T(x0+205,118,'施力',{z:12,f:C.F});
+  if(i===1)g+=RC(x0+82,148,36,36,C.box,'rx="5"')+T(x0+100,140,'抗力',{z:12,f:C.mut})+AR(x0+208,252,x0+208,200)+T(x0+208,270,'施力',{z:12,f:C.F});
+  if(i===2)g+=RC(x0+178,148,36,36,C.box,'rx="5"')+T(x0+196,140,'抗力',{z:12,f:C.mut})+AR(x0+100,252,x0+100,200)+T(x0+100,270,'施力',{z:12,f:C.F});
+  h+=`<g opacity="${a<0||act?1:.35}"><g transform="rotate(${n1(ang)} ${px} 190)">${g}</g><path d="M${px} 197L${px-14} 224H${px+14}Z" fill="#6b7488"/>`+T(px,242,'支點',{z:12,f:C.mut})+'</g>';});
+ return h;},
+points:['支點在中間：施力臂 ＞ 抗力臂時<b>省力</b>（拔釘器）；施力臂 ＜ 抗力臂時<b>費力但省時</b>（裁縫剪刀）；兩者相等時可<b>改變施力方向</b>（等臂天平）。','<b>抗力點</b>在中間：施力臂 ＞ 抗力臂，一定<b>省力</b>、費時。例如<b>行李箱、裁紙刀</b>。','<b>施力點</b>在中間：施力臂 ＜ 抗力臂，一定<b>費力</b>、省時。例如<b>掃把、麵包夾</b>。'],
+rhyme:'抗力點在中間省力，施力點在中間費力，支點在中間看力臂。'});
+
+/* ---------- 10 滑輪 ---------- */
+S.push({unit:3,title:'滑輪：定滑輪與動滑輪',dur:14,loop:false,svg:
+`<line x1="80" y1="50" x2="592" y2="50" stroke="#6b7488" stroke-width="8"/><line x1="200" y1="50" x2="200" y2="100" stroke="${C.ink}" stroke-width="4"/>
+${T(200,400,'定滑輪：F ＝ W',{w:700,z:18})}${T(200,422,'不省力，但可以改變施力方向',{z:14})}${T(200,442,'拉下的距離 ＝ 物體上升的距離（例：旗杆頂端）',{z:12,f:C.mut})}
+${T(590,400,'動滑輪：F ＝ W ÷ 2',{w:700,z:18})}${T(590,422,'省力，但比較費時',{z:14})}${T(590,442,'拉的距離 ＝ 物體上升距離的 2 倍（例：吊車）',{z:12,f:C.mut})}`,
+caps:[[0,'左邊是定滑輪：輪子的中心軸固定不動。右邊是動滑輪：輪子會跟著物體一起移動。'],[1.5,'定滑輪：往下拉多少，物體就上升多少。施力等於物重，不省力，但可以改變施力方向。'],[7,'動滑輪：物體的重量由兩段繩子分擔，所以施力只要物重的一半。'],[9,'但是繩子要拉的距離，是物體上升距離的兩倍，比較費時。']],
+tick(t){const p=sg(t,1.5,6),q=sg(t,7.5,12),lt=330-100*p,hy=210+100*p,py=280-70*q,my=205-140*q;let h='';
+ h+=`<path d="M170 ${n1(lt)}V100A30 30 0 0 1 230 100V${n1(hy)}" fill="none" stroke="${C.ink}" stroke-width="2.5"/>`+dot(200,100,30,'#dfe3ec',.9,`stroke="${C.ink}" stroke-width="3"`)+dot(200,100,4,C.ink)+RC(148,lt,44,40,C.box,'rx="5"')+T(170,lt+26,'W',{w:700,f:'#fff'})+AR(230,hy,230,hy+46)+T(244,hy+34,'F',{a:'start',f:C.F,w:700});
+ if(p>.05)h+=AR(268,210,268,210+100*p,'B',3)+AR(122,370,122,370-100*p,'B',3);
+ h+=`<path d="M560 50V${n1(py)}A30 30 0 0 0 620 ${n1(py)}V${n1(my)}" fill="none" stroke="${C.ink}" stroke-width="2.5"/>`+dot(590,py,30,'#dfe3ec',.9,`stroke="${C.ink}" stroke-width="3"`)+dot(590,py,4,C.ink)+`<line x1="590" y1="${n1(py)}" x2="590" y2="${n1(py+45)}" stroke="${C.ink}" stroke-width="3"/>`+RC(566,py+45,48,40,C.box,'rx="5"')+T(590,py+71,'W',{w:700,f:'#fff'})+AR(620,my,620,my-44)+T(634,my-20,'F',{a:'start',f:C.F,w:700});
+ if(q>.05)h+=AR(662,205,662,205-140*q,'B',3)+AR(528,365,528,365-70*q,'B',3);
+ return h;},
+points:['<b>定滑輪</b>：中心軸位置<b>固定</b>。施力 F ＝ <b>W</b>，不能省力，但能<b>改變施力方向</b>；施力拉下的距離<b>等於</b>物體上升的距離。','<b>動滑輪</b>：中心軸隨物體一起<b>移動</b>。施力 F ＝ <b>W 的一半</b>（W 是懸掛物加動滑輪的總重），可以省力。','動滑輪施力拉的距離是物體上升距離的 <b>2</b> 倍，所以較<b>費時</b>。','定滑輪可看成<b>支點在中間</b>的等臂槓桿；動滑輪可看成<b>抗力點在中間</b>的槓桿。'],
+rhyme:'定滑輪改方向、不省力；動滑輪省一半的力，要多拉一倍的繩。'});
+
+/* ---------- 11 輪軸 ---------- */
+const wheel=(cx,ang)=>dot(cx,220,110,'#e9edf5',1,`stroke="${C.ink}" stroke-width="3"`)+`<g transform="rotate(${n1(ang)} ${cx} 220)"><path d="M${cx-110} 220H${cx+110}M${cx} 110V330" stroke="#aab3c7" stroke-width="3"/></g>`+dot(cx,220,40,'#c3cbe0',1,`stroke="${C.ink}" stroke-width="3"`)+dot(cx,220,5,C.ink)+T(cx-68,160,'輪',{z:14,w:700})+T(cx,206,'軸',{z:14,w:700});
+S.push({unit:3,title:'輪軸',dur:14,loop:false,svg:
+`${T(200,40,'施力在輪上：省力、費時',{w:700,z:18,f:C.U})}${T(200,64,'例：水龍頭',{z:14,f:C.mut})}${T(600,40,'施力在軸上：費力、省時',{w:700,z:18,f:C.F})}${T(600,64,'例：擀麵棍',{z:14,f:C.mut})}
+${T(400,442,'輪軸可看成以中心軸為支點的槓桿：輪半徑 R、軸半徑 r 就是兩個力臂',{z:13,f:C.mut})}`,
+caps:[[0,'輪軸是固定在同一轉軸上的大輪和小軸，輪轉一圈，軸也轉一圈。'],[1.5,'施力在輪上：施力臂是大的輪半徑，比抗力臂長，所以省力，但手要拉比較長的距離。'],[7.5,'施力在軸上：施力臂是小的軸半徑，比抗力臂短，所以費力。'],[10,'但是手只移動一小段，輪上的物體就移動一大段，比較省時。']],
+tick(t){const a=sg(t,1.5,6),b=sg(t,8.5,13);let h=wheel(200,60*a);
+ h+=`<line x1="310" y1="220" x2="310" y2="${n1(250+115*a)}" stroke="${C.ink}" stroke-width="2.5"/>`+AR(310,250+115*a,310,292+115*a)+T(324,280+115*a,'F',{a:'start',f:C.F,w:700})+`<line x1="160" y1="220" x2="160" y2="${n1(340-42*a)}" stroke="${C.ink}" stroke-width="2.5"/>`+RC(142,340-42*a,36,30,C.box,'rx="5"')+T(160,361-42*a,'W',{w:700,z:14,f:'#fff'});
+ h+=wheel(600,60*b)+`<line x1="640" y1="220" x2="640" y2="${n1(300+42*b)}" stroke="${C.ink}" stroke-width="2.5"/>`+AR(640,300+42*b,640,342+42*b)+T(654,330+42*b,'F',{a:'start',f:C.F,w:700})+`<line x1="490" y1="220" x2="490" y2="${n1(385-115*b)}" stroke="${C.ink}" stroke-width="2.5"/>`+RC(472,385-115*b,36,30,C.box,'rx="5"')+T(490,406-115*b,'W',{w:700,z:14,f:'#fff'});
+ return h;},
+points:['固定在同一轉軸上、半徑不同的兩個同心圓輪稱為<b>輪軸</b>；半徑大的是<b>輪</b>，半徑小的是<b>軸</b>。','輪轉一圈，軸也跟著轉<b>一</b>圈。','輪軸可看成以<b>中心軸</b>為支點的槓桿，輪半徑和軸半徑是兩個<b>力臂</b>。','施力在<b>輪</b>上：施力臂 ＞ 抗力臂，<b>省力</b>、費時。例如<b>水龍頭</b>。','施力在<b>軸</b>上：施力臂 ＜ 抗力臂，<b>費力</b>、省時。例如<b>擀麵棍</b>。'],
+rhyme:'施力在輪省力，施力在軸費力。'});
+
+/* ---------- 12 斜面與螺旋 ---------- */
+const screw=(x,gap)=>{let s=RC(x-8,218,16,112,'#aab3c7',`stroke="${C.ink}" stroke-width="1.5"`)+`<path d="M${x-14} 212H${x+14}V220H${x-14}Z" fill="${C.ink}"/>`;for(let y=228;y<326;y+=gap)s+=`<line x1="${x-11}" y1="${y+4}" x2="${x+11}" y2="${y-3}" stroke="${C.ink}" stroke-width="2"/>`;return s;};
+S.push({unit:3,title:'斜面、螺旋，以及「不能省功」',dur:14,loop:false,svg:
+`<path d="M60 340L420 190H520V340Z" fill="#d9dde6"/><line x1="40" y1="340" x2="790" y2="340" stroke="${C.line}" stroke-width="4"/>
+<path d="M548 340V190M541 340H555M541 190H555" stroke="${C.S}" stroke-width="2.5" fill="none"/>${T(560,270,'H',{a:'start',f:C.S,w:700})}${T(215,244,'斜面長 L',{f:C.S,w:700,z:15})}
+${screw(704,7)}${screw(750,15)}${T(704,204,'螺距小',{z:11})}${T(750,204,'螺距大',{z:11})}${T(727,360,'螺旋＝捲起來的斜面',{z:12})}${T(727,377,'螺距越小越省力',{z:12,f:C.U})}
+${T(380,408,'F × L ＝ W × H：斜面越平緩越省力，但要走的距離越長',{z:15})}${T(400,436,'任何機械都不能省功：省力就費時，省時就費力',{w:700,z:17})}`,
+caps:[[0,'要把同一個重物搬到同樣的高度，有兩種方法：沿斜面推上去，或直接垂直抬上去。'],[1,'沿斜面推：需要的力比物重小，但是要推比較長的距離。'],[4,'直接抬：距離短，但施力要等於物重。'],[8,'兩種方法，物體增加的位能相同，所以作的功一樣多。斜面省了力，沒有省功。'],[11,'螺旋是繞在圓柱上的斜面。螺距越小，展開的斜面越長、越平緩，就越省力。']],
+tick(t){const p=sg(t,1,8),x=60+360*p,y=340-150*p;let h='';
+ h+=`<g transform="translate(${n1(x)} ${n1(y)}) rotate(-22.6)">`+RC(0,-30,42,30,C.box,'rx="4"')+AR(46,-15,86,-15)+'</g>'+T(x+70,y-66,'F（比 W 小）',{z:13,f:C.F,w:700});
+ h+=RC(590,310-150*p,42,30,C.box,'rx="4"')+AR(611,306-150*p,611,206-150*p)+T(640,270-150*p,'W',{a:'start',z:14,f:C.F,w:700});
+ h+=T(180,40,'沿斜面推：力小、距離長',{z:14})+RC(70,50,220*p,13,C.U)+T(560,40,'直接抬：力大、距離短',{z:14})+RC(450,50,220*p,13,C.U);
+ h+=T(400,100,'兩種方法作的功一樣多',{w:700,z:18,f:C.U,o:sg(t,8,8.6)});
+ return h;},
+points:['斜面：F × L ＝ W × H，所以 F ＝ W × <b>H ÷ L</b>。因為 L ＞ H，所以 F ＜ W，可以<b>省力</b>。','斜面越<b>平緩</b>越省力，但施力的作用距離越<b>長</b>。例如無障礙坡道、蜿蜒的山路。','<b>螺旋</b>是繞在圓柱上的<b>斜面</b>；<b>螺距</b>越小，展開的斜面越長、越平緩，越省力。例如螺絲釘、瓶蓋。','機械可以省力、省時或方便操作，但<b>不能省功</b>。','省力的機械，施力的作用距離必<b>加長</b>；要縮短作用距離，就一定較<b>費力</b>。'],
+rhyme:'省力就費時，省時就費力；什麼機械都不省功。'});
+
+/* ---------- 13 給你的一段話 ---------- */
+const HP=[[452,402],[730,345],[505,280],[672,215],[568,150],[612,85]],HL=plen(HP);
+const MSG=[['功 ＝ 力 × 沿力方向的位移','只要朝著目標的方向用力，每一步都算數。',C.F],['功率只是快慢','走得慢沒關係。到了同樣的高度，作的功一樣多。',C.S],['斜面省力不省功','路太陡，就換一條緩一點的路；路長一些，但走得到。',C.K],['能量守恆','付出的努力不會憑空消失，都存成了你的位能。',C.U]];
+S.push({unit:4,title:'給你的一段話',dur:16,loop:false,svg:
+`<path d="M430 410L610 50L770 410Z" fill="#dfe6ee"/><path d="M${HP.map(p=>p.join(' ')).join('L')}" fill="none" stroke="#aab3c7" stroke-width="3" stroke-dasharray="6 6"/>
+<path d="M612 85V52" stroke="${C.ink}" stroke-width="3"/><path d="M612 52L640 61L612 70Z" fill="${C.F}"/>${RC(776,85,14,317,'#fff',`stroke="${C.line}"`)}${T(783,76,'位能',{z:12,f:C.U})}`,
+caps:[[0,'這一章學的原理，也可以拿來看自己的學習。'],[1,'方向對了，力氣才會變成功。'],[5,'每個人的功率不同，但能到達的高度沒有不同。'],[9,'省力的路比較長，可是它確實通往山頂。'],[13,'你每天累積的，都是位能。'],[15,'需要的時候，位能會變成你的動能。加油！']],
+tick(t){const p=sg(t,.5,14.5),[x,y]=along(HP,p*HL);let h='',d='M452 402',acc=0;
+ for(let i=1;i<HP.length;i++){const seg=Math.hypot(HP[i][0]-HP[i-1][0],HP[i][1]-HP[i-1][1]);if(acc+seg<=p*HL){d+='L'+HP[i].join(' ');acc+=seg;}else break;}
+ h+=`<path d="${d}L${n1(x)} ${n1(y)}" fill="none" stroke="${C.K}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`+dot(x,y,10,C.F,1,'stroke="#fff" stroke-width="3"');
+ const uh=(402-y);h+=RC(776,y,14,uh,C.U);
+ MSG.forEach(([ti,l,c],i)=>{const o=t>=15.9?1:sg(t,1+4*i,1.8+4*i),yy=64+88*i;h+=`<g opacity="${n1(o*100)/100}">`+RC(20,yy-22,5,56,c)+T(36,yy,ti,{a:'start',w:700,z:18,f:c})+T(36,yy+27,l,{a:'start',z:14})+'</g>';});
+ h+=T(215,426,'需要的時候，位能會變成你的動能。加油！',{w:700,z:17,o:t>=15.9?1:sg(t,15,15.6)});
+ return h;},
+points:['<b>功 ＝ 力 × 沿力方向的位移</b>：只要朝著目標的方向用力，每一步都算數。','<b>功率</b>只是快慢：走得慢沒關係，到了同樣的高度，作的功<b>一樣多</b>。','<b>斜面</b>省力不省功：路太陡，就換一條緩一點的路；路長一些，但<b>走得到</b>。','<b>槓桿</b>：找到好的支點和夠長的力臂，也就是好方法，小小的力也能撐起很重的東西。','<b>能量守恆</b>：付出的努力不會憑空消失，它會存成你的<b>位能</b>，在需要的時候變成<b>動能</b>。'],
+rhyme:'方向對了就有功，慢慢來也到得了，努力不會憑空消失。'});
+</script>
+
+<script>
+/* ---------- 播放器 ---------- */
+(function(){
+const $=id=>document.getElementById(id);
+const stat=$('stat'),dyn=$('dyn'),cap=$('cap'),play=$('play'),seek=$('seek'),next=$('next'),prev=$('prev'),notes=$('notes');
+let i=0,t=0,playing=false,last=0,reciting=false;const seen=new Set();
+try{const v=parseInt(localStorage.getItem('work-energy-stage'),10);if(v>=0&&v<S.length)i=v;}catch(e){}
+
+S.forEach((s,k)=>{
+  if(k>0&&s.unit!==S[k-1].unit){const g=document.createElement('li');g.className='gap';g.setAttribute('aria-hidden','true');$('steps').appendChild(g);}
+  const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.textContent=k+1;b.title=s.title;b.setAttribute('aria-label','階段 '+(k+1)+'：'+s.title);
+  b.addEventListener('click',()=>go(k));li.appendChild(b);$('steps').appendChild(li);s.btn=b;});
+UNITS.forEach((u,k)=>{const b=document.createElement('button');b.type='button';b.textContent=u;b.addEventListener('click',()=>go(S.findIndex(s=>s.unit===k)));$('units').appendChild(b);});
+
+function local(){const s=S[i];return s.loop?t%s.dur:Math.min(t,s.dur);}
+function draw(){const s=S[i],lt=local();dyn.innerHTML=s.tick(lt);
+  let c=s.caps[0][1];for(const[a,txt]of s.caps)if(lt>=a)c=txt;if(cap.textContent!==c)cap.textContent=c;
+  seek.value=Math.round(lt/s.dur*1000);}
+function ui(){const s=S[i],end=!s.loop&&t>=s.dur;
+  play.textContent=playing?'⏸ 暫停':end?'↺ 再看一次':t>0?'▶ 繼續':'▶ 開始';
+  next.classList.toggle('ready',seen.has(i)&&i<S.length-1);next.disabled=i===S.length-1;prev.disabled=i===0;
+  S.forEach((x,k)=>{x.btn.classList.toggle('seen',seen.has(k));x.btn.setAttribute('aria-current',k===i?'true':'false');});
+  [...$('units').children].forEach((b,k)=>b.setAttribute('aria-current',k===s.unit?'true':'false'));
+  $('hint').textContent=reciting?'點一下空格就能看答案。先在心裡說出答案，再點開核對。':seen.has(i)?(i<S.length-1?'看完了。試著不看筆記說一次重點，再按「下一階段」。':'全部看完了。開啟背誦模式，從第 1 階段再檢查一次自己。'):'按「開始」看動畫，隨時可以暫停或拖動進度條重看。';}
+function go(k){i=cl(k,0,S.length-1);t=0;playing=false;const s=S[i];
+  stat.innerHTML=s.svg;$('num').textContent=UNITS[s.unit]+'・階段 '+(i+1)+'／'+S.length;$('title').textContent=s.title;
+  $('points').innerHTML=s.points.map(p=>'<li>'+p.replace(/<b>/g,'<b class="k" tabindex="0">')+'</li>').join('');$('rhyme').textContent=s.rhyme;
+  try{localStorage.setItem('work-energy-stage',i);}catch(e){}
+  draw();ui();}
+function frame(now){if(!playing)return;t+=Math.min(.1,(now-last)/1000);last=now;const s=S[i];
+  if(t>=s.dur&&!seen.has(i)){seen.add(i);ui();}
+  if(!s.loop&&t>=s.dur){t=s.dur;playing=false;ui();}
+  draw();if(playing)requestAnimationFrame(frame);}
+function toggle(){const s=S[i];if(playing){playing=false;}else{if(!s.loop&&t>=s.dur)t=0;playing=true;last=performance.now();requestAnimationFrame(frame);}ui();}
+
+play.addEventListener('click',toggle);
+$('replay').addEventListener('click',()=>{t=0;draw();if(!playing)toggle();});
+seek.addEventListener('input',()=>{playing=false;t=seek.value/1000*S[i].dur;draw();ui();});
+next.addEventListener('click',()=>go(i+1));prev.addEventListener('click',()=>go(i-1));
+$('recite').addEventListener('click',e=>{reciting=!reciting;notes.classList.toggle('reciting',reciting);e.currentTarget.setAttribute('aria-pressed',reciting);e.currentTarget.textContent=reciting?'顯示全部關鍵字':'背誦模式：遮住關鍵字';notes.querySelectorAll('.k.open').forEach(k=>k.classList.remove('open'));ui();});
+$('points').addEventListener('click',e=>{const k=e.target.closest('.k');if(k&&reciting)k.classList.toggle('open');});
+$('points').addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('k')&&reciting){e.preventDefault();e.target.classList.toggle('open');}});
+document.addEventListener('keydown',e=>{if(e.target.closest('button,input,.k'))return;if(e.key===' '){e.preventDefault();toggle();}else if(e.key==='ArrowRight')go(i+1);else if(e.key==='ArrowLeft')go(i-1);});
+go(i);
+})();
+</script>
+</body>
+</html>
